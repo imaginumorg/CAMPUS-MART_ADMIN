@@ -1,0 +1,337 @@
+@import url("https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #3838EC;
+  --color-danger: #DC2626;
+  --color-neutral-50: #FCFCFC;
+  --color-neutral-100: #F7F8FA;
+  --color-neutral-200: #EEF1F5;
+  --color-neutral-300: #E1E5EA;
+  --color-neutral-400: #C9D1DC;
+  --color-neutral-500: #A2ACB8;
+  --color-neutral-600: #7A8697;
+  --color-neutral-700: #64707D;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #FCFCFC;
+  color: #64707D;
+  font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.login-shell {
+  background:
+    radial-gradient(circle at 50% 14%, rgba(56, 56, 236, 0.08) 0, transparent 26%),
+    linear-gradient(180deg, #FCFCFC 0%, #F7F8FA 100%);
+}
+
+.login-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.08;
+}
+
+.login-illustration-grid {
+  background:
+    linear-gradient(rgba(100, 112, 125, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 112, 125, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(247, 248, 250, 0.8) 100%);
+  background-size: 28px 28px, 28px 28px, auto;
+}
+
+.dashboard-grid {
+  background:
+    linear-gradient(rgba(56, 56, 236, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 56, 236, 0.05) 1px, transparent 1px),
+    linear-gradient(135deg, #FCFCFC 0%, #F7F8FA 100%);
+  background-size: 26px 26px, 26px 26px, auto;
+}
+
+.login-illustration-scene {
+  position: relative;
+  height: 310px;
+  margin-top: 2rem;
+}
+
+.login-bubble {
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(201, 209, 220, 0.45);
+}
+
+.login-bubble-one {
+  top: 22px;
+  left: 18px;
+  width: 150px;
+  height: 78px;
+}
+
+.login-bubble-two {
+  top: 48px;
+  right: 48px;
+  width: 116px;
+  height: 62px;
+}
+
+.login-bubble-three {
+  top: 118px;
+  left: 204px;
+  width: 112px;
+  height: 56px;
+}
+
+.login-desk {
+  position: absolute;
+  right: 24px;
+  bottom: 58px;
+  left: 36px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #111827;
+}
+
+.login-desk::before,
+.login-desk::after {
+  content: '';
+  position: absolute;
+  bottom: -104px;
+  width: 6px;
+  height: 112px;
+  border-radius: 9999px;
+  background: #111827;
+}
+
+.login-desk::before {
+  left: 42px;
+}
+
+.login-desk::after {
+  right: 48px;
+}
+
+.login-monitor {
+  position: absolute;
+  left: 112px;
+  bottom: 74px;
+  width: 96px;
+  height: 62px;
+  border-radius: 12px;
+  background: #3838EC;
+  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.65);
+}
+
+.login-monitor::before {
+  content: '';
+  position: absolute;
+  left: 38px;
+  bottom: -18px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #64707D;
+}
+
+.login-cup {
+  position: absolute;
+  left: 82px;
+  bottom: 88px;
+  width: 18px;
+  height: 30px;
+  border-radius: 0 0 8px 8px;
+  background: #3838EC;
+}
+
+.login-cup::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: -7px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #3838EC;
+  border-left: 0;
+  border-radius: 0 9999px 9999px 0;
+}
+
+.login-plant {
+  position: absolute;
+  right: 76px;
+  bottom: 90px;
+  width: 22px;
+  height: 32px;
+  border-radius: 0 0 10px 10px;
+  background: #A2ACB8;
+}
+
+.login-plant::before,
+.login-plant::after {
+  content: '';
+  position: absolute;
+  bottom: 22px;
+  width: 18px;
+  height: 28px;
+  border-radius: 9999px 9999px 0 9999px;
+  background: #3838EC;
+}
+
+.login-plant::before {
+  left: -8px;
+  transform: rotate(-32deg);
+}
+
+.login-plant::after {
+  right: -8px;
+  transform: rotate(28deg);
+}
+
+.login-chair {
+  position: absolute;
+  left: 20px;
+  bottom: 46px;
+  width: 70px;
+  height: 74px;
+  border-radius: 18px 18px 10px 10px;
+  background: rgba(100, 112, 125, 0.18);
+}
+
+.login-chair::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  bottom: -54px;
+  width: 46px;
+  height: 54px;
+  border-radius: 0 0 16px 16px;
+  background: rgba(100, 112, 125, 0.18);
+}
+
+.login-figure {
+  position: absolute;
+  left: 56px;
+  bottom: 64px;
+  width: 126px;
+  height: 208px;
+}
+
+.login-figure-head {
+  position: absolute;
+  top: 4px;
+  left: 28px;
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  background: #F4C9B8;
+}
+
+.login-figure-head::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 2px;
+  width: 38px;
+  height: 20px;
+  border-radius: 9999px 9999px 10px 10px;
+  background: #64707D;
+}
+
+.login-figure-body {
+  position: absolute;
+  top: 42px;
+  left: 18px;
+  width: 78px;
+  height: 92px;
+  border-radius: 20px;
+  background: #3838EC;
+}
+
+.login-figure-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 31px;
+  width: 14px;
+  height: 92px;
+  background: #FCFCFC;
+}
+
+.login-figure-arm {
+  position: absolute;
+  top: 82px;
+  left: 82px;
+  width: 48px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #F4C9B8;
+  transform: rotate(-12deg);
+}
+
+.login-figure-arm::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: -58px;
+  width: 58px;
+  height: 12px;
+  border-radius: 9999px;
+  background: #F4C9B8;
+  transform: rotate(18deg);
+}
+
+.login-figure-leg-left,
+.login-figure-leg-right {
+  position: absolute;
+  top: 126px;
+  width: 18px;
+  height: 82px;
+  border-radius: 9999px;
+  background: #1F2937;
+}
+
+.login-figure-leg-left {
+  left: 34px;
+  transform: rotate(8deg);
+}
+
+.login-figure-leg-right {
+  left: 64px;
+  transform: rotate(-26deg);
+}
+
+.login-figure-leg-left::after,
+.login-figure-leg-right::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  width: 32px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #FCFCFC;
+}
+
+.login-figure-leg-left::after {
+  left: -8px;
+}
+
+.login-figure-leg-right::after {
+  left: -4px;
+}
