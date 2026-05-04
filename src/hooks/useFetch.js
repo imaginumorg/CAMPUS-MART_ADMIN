@@ -1,19 +1,29 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export const useFetch = (request) => {
-  const [responseData, setResponseData] = useState(null)
-  const [responsePagination, setResponsePagination] = useState(null)
+  const [responseData, setResponseData] = useState()
+  const [responsePagination, setResponsePagination] = useState()
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
+  const latestRequestId = useRef(0)
+  const hasLoadedData = useRef(false)
 
   const runRequest = useCallback(async () => {
-    setIsLoading(true)
+    const requestId = latestRequestId.current + 1
+    latestRequestId.current = requestId
+
+    setIsLoading((currentLoading) => currentLoading || !hasLoadedData.current)
     setErrorMessage('')
     const response = await request()
+
+    if (requestId !== latestRequestId.current) {
+      return response
+    }
 
     if (response.success) {
       setResponseData(response.data)
       setResponsePagination(response.pagination)
+      hasLoadedData.current = true
     } else {
       setErrorMessage(response.message)
     }
@@ -23,7 +33,6 @@ export const useFetch = (request) => {
   }, [request])
 
   useEffect(() => {
-    // Defer the first request by a tick to keep effect-time state updates lint-safe.
     const requestTimer = window.setTimeout(runRequest, 0)
     return () => window.clearTimeout(requestTimer)
   }, [runRequest])

@@ -23,14 +23,22 @@ body {
   margin: 0;
   min-width: 320px;
   background: #FCFCFC;
-  color: #64707D;
+  color: #0F172A;
   font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
+}
+
+img,
+svg {
+  max-width: 100%;
 }
 
 .login-shell {

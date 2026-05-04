@@ -3,128 +3,184 @@ import Loader from '../components/Loader'
 import { useFetch } from '../hooks/useFetch'
 import { api } from '../services/api'
 
-const dashboardSignalCards = [
-  { title: 'Review backlog', value: '18', note: 'Items waiting for moderator action' },
-  { title: 'Risk watch', value: '03', note: 'Listings close to escalation threshold' },
-  { title: 'Resolution rate', value: '92%', note: 'Closed in the last 24 hours' },
-]
+const toneStyles = {
+  primary: 'bg-[#EEF2FF] text-primary',
+  danger: 'bg-[#FEF2F2] text-[#DC2626]',
+  success: 'bg-[#ECFDF3] text-[#16A34A]',
+  neutral: 'bg-[#F1F5F9] text-[#64748B]',
+}
 
-const dashboardQueueItems = [
-  { title: 'Fake listing cluster', note: '3 products tied to one seller', actionLabel: 'Escalate', isDanger: true },
-  { title: 'Dorm move-out spike', note: 'Large burst in newly listed items', actionLabel: 'Review', isDanger: false },
-  { title: 'Repeated report source', note: 'Possible spam reporter behavior', actionLabel: 'Inspect', isDanger: false },
-]
+const statsAccent = ['border-l-[4px] border-primary', 'border-l-[4px] border-[#DC2626]', 'border-l-[4px] border-[#22C55E]']
 
 const Dashboard = () => {
-  const loadDashboardData = useCallback(() => api.getDashboard(), [])
-  const { data: dashboardData, loading } = useFetch(loadDashboardData)
+  const loadDashboard = useCallback(() => api.getDashboard(), [])
+  const { data: dashboardData, loading } = useFetch(loadDashboard)
 
-  if (loading) return <Loader rows={4} columns={4} />
+  if (loading && !dashboardData) return <Loader rows={4} columns={3} />
 
   return (
     <div className="space-y-6">
-      <div className="dashboard-grid overflow-hidden rounded-xl border border-neutral-200 shadow-sm">
-        <div className="grid gap-4 p-5 lg:grid-cols-[1.3fr_0.9fr] lg:p-6">
-          <section className="rounded-xl bg-primary p-6 text-white">
-            <p className="text-sm font-semibold text-white">Campus Mart Admin</p>
-            <h1 className="mt-2 text-3xl font-bold text-white">Admin control center</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-white">
-              Marketplace health, moderation throughput, and user trust signals in one operating surface.
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {dashboardSignalCards.map((signalCard) => (
-                <article key={signalCard.title} className="rounded-xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                  <p className="text-xs font-semibold uppercase text-white">{signalCard.title}</p>
-                  <p className="mt-2 text-2xl font-bold text-white">{signalCard.value}</p>
-                  <p className="mt-2 text-xs leading-5 text-white">{signalCard.note}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="grid gap-4">
-            <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[#64707D]">Live moderation stream</p>
-                  <p className="mt-1 text-xs text-[#7A8697]">Recent actions taken across the marketplace</p>
-                </div>
-                <span className="rounded-xl bg-[#EEF1F5] px-3 py-1 text-xs font-semibold text-primary">Online</span>
-              </div>
-              <div className="mt-5 space-y-3">
-                <div className="rounded-xl bg-[#F7F8FA] p-3">
-                  <p className="text-sm font-semibold text-[#64707D]">Bike listing escalated</p>
-                  <p className="mt-1 text-xs text-[#7A8697]">Report threshold crossed 4 minutes ago</p>
-                </div>
-                <div className="rounded-xl bg-[#F7F8FA] p-3">
-                  <p className="text-sm font-semibold text-[#64707D]">Seller access updated</p>
-                  <p className="mt-1 text-xs text-[#7A8697]">Inactive accounts reviewed this morning</p>
-                </div>
-              </div>
-            </article>
-            <article className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-semibold text-[#64707D]">Today at a glance</p>
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                {['Approvals', 'Warnings', 'Escalations'].map((item, index) => (
-                  <div key={item} className={`rounded-xl p-4 ${index === 2 ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#EEF1F5] text-primary'}`}>
-                    <p className="text-xs font-semibold uppercase">{item}</p>
-                    <p className="mt-2 text-2xl font-bold">{index === 0 ? '24' : index === 1 ? '11' : '3'}</p>
-                  </div>
-                ))}
-              </div>
-            </article>
-          </section>
+      <div>
+        <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220]">Admin Control Center</h1>
+        <div className="mt-2 flex items-center gap-3 text-[14px] text-primary">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary">
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="m5 12 5 5L20 7" />
+            </svg>
+          </span>
+          <span>Operational status is currently optimal.</span>
         </div>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {dashboardData.stats.map((statCard, index) => (
-          <article key={statCard.label} className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-            <div className={`mb-4 h-2 w-12 rounded-xl ${index === 0 ? 'bg-primary' : 'bg-[#C9D1DC]'}`} />
-            <p className="text-sm font-semibold text-[#7A8697]">{statCard.label}</p>
-            <p className="mt-3 text-3xl font-bold text-primary">{statCard.value}</p>
-          </article>
-        ))}
-      </section>
-
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <section className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[#64707D]">Recent moderation activity</h2>
-            <span className="rounded-xl bg-[#EEF1F5] px-3 py-1 text-xs font-semibold text-primary">Updated now</span>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {dashboardData.activity.map((activityItem) => (
-              <article key={activityItem.title} className="rounded-xl border border-neutral-200 bg-[#F7F8FA] p-4">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white">
-                  {activityItem.title.charAt(0).toUpperCase()}
-                </div>
-                <p className="text-sm font-semibold text-[#64707D]">{activityItem.title}</p>
-                <p className="mt-2 text-sm text-[#7A8697]">{activityItem.value}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-[#64707D]">Priority queue</h2>
-          <div className="mt-4 space-y-3">
-            {dashboardQueueItems.map((queueItem) => (
-              <article key={queueItem.title} className="rounded-xl border border-neutral-200 p-4">
-                <div className="flex items-start justify-between gap-3">
+      <section className="grid gap-5 xl:grid-cols-[1.55fr_0.75fr]">
+        <div className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-3">
+            {dashboardData.stats.map((statCard, index) => (
+              <article key={statCard.label} className={`rounded-[20px] bg-white p-5 shadow-sm ${statsAccent[index]}`}>
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#64707D]">{queueItem.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-[#7A8697]">{queueItem.note}</p>
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">{statCard.label}</p>
+                    <p className="mt-5 text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#0B1220]">{statCard.value}</p>
                   </div>
-                  <span className={`rounded-xl px-3 py-1 text-xs font-semibold ${queueItem.isDanger ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#EEF1F5] text-primary'}`}>
-                    {queueItem.actionLabel}
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${index === 0 ? 'text-primary' : index === 1 ? 'text-[#DC2626]' : 'text-[#22C55E]'}`}>
+                    {index === 0 && (
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="4" y="4" width="16" height="16" rx="2" />
+                        <path d="M8 16V8" />
+                        <path d="M12 16v-4" />
+                        <path d="M16 16v-7" />
+                      </svg>
+                    )}
+                    {index === 1 && (
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M8 8l8 8" />
+                      </svg>
+                    )}
+                    {index === 2 && (
+                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="m8 12 2.5 2.5L16 9" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 inline-flex rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none shadow-sm">
+                  <span className={index === 0 ? 'text-[#16A34A]' : index === 1 ? 'text-[#DC2626]' : 'text-primary'}>
+                    {index === 0 ? '+12%' : index === 1 ? 'High priority' : '98% efficiency'}
                   </span>
                 </div>
               </article>
             ))}
           </div>
+
+          <section className="rounded-[24px] bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-[19px] font-semibold text-[#0B1220]">Priority queue</h2>
+              <button type="button" className="text-[14px] font-medium text-primary">
+                View all tasks
+              </button>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {dashboardData.queue.map((queueItem) => (
+                <article
+                  key={queueItem.id}
+                  className={`flex flex-col gap-4 rounded-[20px] border p-4 md:flex-row md:items-center md:justify-between ${
+                    queueItem.tone === 'danger' ? 'border-[#FECACA] bg-[#FFF7F7]' : 'border-[#E2E8F0] bg-[#F8FAFC]'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
+                        queueItem.tone === 'danger' ? 'bg-[#EF4444] text-white' : 'bg-[#E0E7FF] text-primary'
+                      }`}
+                    >
+                      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+                        {queueItem.tone === 'danger' ? (
+                          <>
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                          </>
+                        ) : (
+                          <>
+                            <path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4Z" />
+                            <circle cx="12" cy="11" r="2.2" />
+                          </>
+                        )}
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[15px] font-semibold text-[#0B1220]">{queueItem.title}</p>
+                      <p className="mt-1 text-[13px] text-[#475569]">
+                        {queueItem.subtitle} <span className="text-[#0B1220]">• {queueItem.time}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`rounded-xl px-5 py-2.5 text-[13px] font-semibold ${
+                      queueItem.tone === 'danger' ? 'bg-[#DC2626] text-white' : 'bg-[#E2E8F0] text-[#0B1220]'
+                    }`}
+                  >
+                    {queueItem.actionLabel}
+                  </button>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <section className="rounded-[24px] bg-white shadow-sm">
+          <div className="border-b border-[#EEF1F5] px-6 py-6">
+            <h2 className="text-[19px] font-semibold text-[#0B1220]">Recent Moderation Activity</h2>
+          </div>
+          <div className="space-y-6 px-6 py-6">
+            {dashboardData.activity.map((activityItem) => (
+              <article key={activityItem.id} className="flex items-start gap-4">
+                <div className={`mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${toneStyles[activityItem.tone]}`}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    {activityItem.tone === 'primary' && <path d="M7 4h10v16l-5-3-5 3V4Z" />}
+                    {activityItem.tone === 'neutral' && (
+                      <>
+                        <circle cx="11" cy="8" r="3" />
+                        <path d="M5 20c1.4-2.8 4-4 6-4" />
+                        <path d="m17 15 2 2 4-4" />
+                      </>
+                    )}
+                    {activityItem.tone === 'danger' && (
+                      <>
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M12 8v5" />
+                        <path d="M12 16h.01" />
+                      </>
+                    )}
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-[16px] font-semibold text-[#0B1220]">{activityItem.title}</h3>
+                      <div className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${toneStyles[activityItem.tone]}`}>
+                        {activityItem.tag}
+                      </div>
+                    </div>
+                    <span className="text-[12px] text-[#0B1220]">{activityItem.time}</span>
+                  </div>
+                  <p className="mt-3 text-[13px] leading-6 text-[#475569]">{activityItem.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="border-t border-[#EEF1F5] px-6 py-5 text-center">
+            <button type="button" className="text-[15px] font-medium text-primary">
+              View full activity log
+            </button>
+          </div>
         </section>
-      </div>
+      </section>
     </div>
   )
 }

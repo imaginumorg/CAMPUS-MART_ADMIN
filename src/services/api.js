@@ -1,6 +1,6 @@
-import { PRODUCT_STATUS, REPORT_REASONS, USER_STATUS } from '../utils/constants'
+import { PRODUCT_STATUS, USER_STATUS } from '../utils/constants'
 
-const simulateNetworkDelay = (durationMs = 350) => new Promise((resolve) => setTimeout(resolve, durationMs))
+const simulateNetworkDelay = (durationMs = 0) => new Promise((resolve) => setTimeout(resolve, durationMs))
 
 // In-memory mock collections keep the UI ready for backend integration without changing page code.
 let mockUsers = [
@@ -20,10 +20,97 @@ let mockProducts = [
 ]
 
 let mockReports = [
-  { id: 1, product: 'Campus Bike', productId: 3, reason: REPORT_REASONS.SCAM, reportCount: 5, status: 'open', created: '2026-04-20' },
-  { id: 2, product: 'Lab Coat', productId: 5, reason: REPORT_REASONS.FAKE, reportCount: 3, status: 'open', created: '2026-04-21' },
-  { id: 3, product: 'Calculus Textbook', productId: 2, reason: REPORT_REASONS.SPAM, reportCount: 2, status: 'open', created: '2026-04-22' },
-  { id: 4, product: 'MacBook Air M2', productId: 1, reason: REPORT_REASONS.OTHER, reportCount: 1, status: 'open', created: '2026-04-23' },
+  {
+    id: 1,
+    reportId: 'RID-9238476',
+    product: 'Zephyr Chronograph',
+    productId: 3,
+    reporterName: 'Sarah Jenkins',
+    reporterReference: 'RID-238776148',
+    sellerId: 'UID-1293184',
+    sku: '884729',
+    reason: 'Counterfeit Item',
+    reportCount: 5,
+    status: 'open',
+    created: '2026-04-20',
+  },
+  {
+    id: 2,
+    reportId: 'RID-9238477',
+    product: 'SonicMax Elite',
+    productId: 5,
+    reporterName: 'Michael Chen',
+    reporterReference: 'RID-238776149',
+    sellerId: 'UID-1294059',
+    sku: '886134',
+    reason: 'Inappropriate Content',
+    reportCount: 3,
+    status: 'open',
+    created: '2026-04-21',
+  },
+  {
+    id: 3,
+    reportId: 'RID-9238478',
+    product: 'Vanguard Trainers',
+    productId: 2,
+    reporterName: 'Elena Rodriguez',
+    reporterReference: 'RID-238776150',
+    sellerId: 'UID-1294934',
+    sku: '887539',
+    reason: 'Spam Listing',
+    reportCount: 2,
+    status: 'open',
+    created: '2026-04-22',
+  },
+  {
+    id: 4,
+    reportId: 'RID-9238479',
+    product: 'Vanguard Trainers',
+    productId: 1,
+    reporterName: 'Elena Rodriguez',
+    reporterReference: 'RID-238776151',
+    sellerId: 'UID-1295809',
+    sku: '888944',
+    reason: 'Spam Listing',
+    reportCount: 1,
+    status: 'open',
+    created: '2026-04-23',
+  },
+]
+
+let mockUserReports = [
+  {
+    id: 'REP-10293',
+    reportedUser: 'Alex Rivers',
+    email: 'alex.r@example.com',
+    sellerId: 'SEL-4829',
+    reporterName: 'Sarah Jenkins',
+    reporterId: 'USR-9021',
+    reason: 'Suspicious Activity',
+    shortReason: 'Suspicious ...',
+    status: 'pending',
+    resolutionLabel: 'Pending',
+    severity: 'urgent',
+    avatarColor: 'from-[#4B5563] to-[#111827]',
+    evidenceText:
+      'The user in question has been repeatedly posting content that violates the community guidelines regarding safety and harassment. Despite multiple requests to stop, they continue to target specific members...',
+  },
+  {
+    id: 'REP-10294',
+    reportedUser: 'Maria Chen',
+    email: 'm.chen@example.com',
+    sellerId: 'SEL-3104',
+    reporterName: 'Tom Wilson',
+    reporterId: 'USR-4421',
+    reason: 'Inaccurate Information',
+    shortReason: 'Inaccurate ...',
+    status: 'pending',
+    resolutionLabel: 'Pending',
+    severity: 'medium',
+    avatarColor: 'from-[#111827] to-[#64748B]',
+    evidenceText:
+      'Listing and profile details appear to be inconsistent across multiple reports. Additional review is needed to determine whether this is misinformation or a data mismatch.',
+  },
 ]
 
 const paginateCollection = (items, { page = 1, limit = 5 } = {}) => {
@@ -78,17 +165,62 @@ export const api = {
       const activeProducts = mockProducts.filter((product) => !product.is_deleted)
       const dashboardPayload = {
         stats: [
-          { label: 'Total Products', value: activeProducts.length },
-          { label: 'Listed Products', value: activeProducts.filter((product) => product.status === PRODUCT_STATUS.LISTED).length },
-          { label: 'Active Users', value: mockUsers.filter((user) => user.status === USER_STATUS.ACTIVE).length },
-          { label: 'Open Reports', value: mockReports.filter((report) => report.status === 'open').length },
+          { label: 'Active Reports', value: '1,284' },
+          { label: 'Rejected', value: '42' },
+          { label: 'Resolved', value: '912' },
+        ],
+        queue: [
+          {
+            id: 'queue-1',
+            title: 'Review anomalous login spike in Region-4',
+            subtitle: 'Triggered by system security audit',
+            time: '2 mins ago',
+            actionLabel: 'Urgent Action',
+            tone: 'danger',
+          },
+          {
+            id: 'queue-2',
+            title: 'Validate new data categorization model',
+            subtitle: 'Scheduled maintenance task',
+            time: '15 mins ago',
+            actionLabel: 'Open',
+            tone: 'neutral',
+          },
         ],
         activity: [
-          { title: 'Recent flagged products', value: 'Campus Bike, Lab Coat' },
-          { title: 'Recent suspensions', value: 'Lina Ortiz moved to suspended' },
-          { title: 'Recent approvals', value: 'Desk Lamp listing reviewed' },
-          { title: 'Pending reviews summary', value: '6 listings awaiting moderation' },
+          {
+            id: 'activity-1',
+            title: 'Content Flag #8902',
+            tag: 'AUTO FLAGGED',
+            description: 'Automated system detected high-risk keywords in public forum post.',
+            time: 'Just now',
+            tone: 'primary',
+          },
+          {
+            id: 'activity-2',
+            title: 'User Audit Complete',
+            tag: 'PENDING',
+            description: 'Verification process for user ID_7739-X has been finalized by moderation.',
+            time: '12m ago',
+            tone: 'neutral',
+          },
+          {
+            id: 'activity-3',
+            title: 'Critical Rejection',
+            tag: 'HIGH ALERT',
+            description: 'Infrastructure attempt blocked from unauthorized IP range 192.x.x.x',
+            time: '45m ago',
+            tone: 'danger',
+          },
         ],
+        summary: {
+          activeUsers: mockUsers.filter((user) => user.status === USER_STATUS.ACTIVE).length,
+          listedProducts: activeProducts.filter((product) => product.status === PRODUCT_STATUS.LISTED).length,
+          openReports: mockReports.filter((report) => report.status === 'open').length,
+          totalResolved: '1,284',
+          productPending: 24,
+          userPending: 12,
+        },
       }
 
       return createApiResponse(dashboardPayload, 'Dashboard loaded')
@@ -129,6 +261,46 @@ export const api = {
       const { data, pagination } = paginateCollection(filteredReports, { page, limit })
       return createApiResponse(data, 'Reports loaded', pagination)
     }),
+  getUserReports: () =>
+    fetcher(() => createApiResponse(mockUserReports, 'User reports loaded')),
+  getUserReportById: (reportId) =>
+    fetcher(() => createApiResponse(mockUserReports.find((report) => report.id === reportId), 'User report loaded')),
+  updateUserReportStatus: (reportId, status) =>
+    fetcher(() => {
+      const statusLabelMap = {
+        pending: 'Pending',
+        dismissed: 'Dismissed',
+        warned: 'Warned',
+        suspended: 'Suspended',
+        banned: 'Banned',
+      }
+
+      mockUserReports = mockUserReports.map((report) =>
+        report.id === reportId
+          ? {
+              ...report,
+              status,
+              resolutionLabel: statusLabelMap[status] || 'Pending',
+            }
+          : report,
+      )
+
+      return createApiResponse(mockUserReports.find((report) => report.id === reportId), 'User report status updated')
+    }),
+  getNotificationCenter: () =>
+    fetcher(() =>
+      createApiResponse({
+        preview: {
+          title: 'System Maintenance',
+          body: 'Scheduled maintenance window starting tomorrow at 9:00 PM.',
+        },
+        broadcasts: [
+          { id: 'broadcast-1', title: 'Holiday Promo Alert', audience: '12.4k recipients', status: 'SENT', time: 'Today, 09:12 AM' },
+          { id: 'broadcast-2', title: 'v2.4 Patch Notes', audience: '850 recipients', status: 'DRAFT', time: 'Oct 22, 04:45 PM' },
+          { id: 'broadcast-3', title: 'Security Update', audience: 'All Users', status: 'SCHEDULED', time: 'Oct 25, 10:00 AM' },
+        ],
+      }, 'Notification center loaded'),
+    ),
   ignoreReport: (reportId) =>
     fetcher(() => {
       mockReports = mockReports.map((report) => (report.id === reportId ? { ...report, status: 'ignored' } : report))

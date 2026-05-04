@@ -10,6 +10,7 @@ const Users = lazy(() => import('./pages/Users'))
 const Products = lazy(() => import('./pages/Products'))
 const Reports = lazy(() => import('./pages/Reports'))
 const Analytics = lazy(() => import('./pages/Analytics'))
+const Notification = lazy(() => import('./pages/Notification'))
 const Settings = lazy(() => import('./pages/Settings'))
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/products" element={<Products />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/notification" element={<Notification />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

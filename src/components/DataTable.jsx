@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import Loader from './Loader'
+import EmptyState from './EmptyState'
 import { STATUS_BADGE_STYLES } from '../utils/constants'
 
 export const StatusBadge = memo(({ status }) => {
@@ -27,7 +28,7 @@ const DataTable = ({
   const showsToolbar = onSearchChange || filters
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm md:p-5">
       {showsToolbar && (
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {onSearchChange && (
@@ -45,9 +46,7 @@ const DataTable = ({
       {loading ? (
         <Loader rows={5} columns={columns.length} />
       ) : rows.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-8 text-center text-sm font-medium text-[#7A8697]">
-          {emptyMessage}
-        </div>
+        <EmptyState message={emptyMessage} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left">
