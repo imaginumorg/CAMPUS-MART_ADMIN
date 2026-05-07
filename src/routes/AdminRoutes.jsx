@@ -7,7 +7,9 @@ import { useAuth } from '../context/AuthContext'
 
 const AdminRoutes = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, sessionLoading } = useAuth()
+
+  if (sessionLoading) return <Loader />
 
   if (!isAuthenticated) return <Navigate to="/login" replace />
 

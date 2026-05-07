@@ -1,6 +1,44 @@
 import { PRODUCT_STATUS, USER_STATUS } from '../utils/constants'
 
 const simulateNetworkDelay = (durationMs = 0) => new Promise((resolve) => setTimeout(resolve, durationMs))
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+const buildUrl = (path, query = {}) => {
+  const url = new URL(`${API_BASE_URL}${path}`)
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      url.searchParams.set(key, value)
+    }
+  })
+
+  return url.toString()
+}
+
+const requestBackend = async (path, { method = 'GET', body, query } = {}) => {
+  const response = await fetch(buildUrl(path, query), {
+    method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  })
+
+  const payload = await response.json().catch(() => ({
+    success: false,
+    message: 'Invalid server response',
+  }))
+
+  if (!response.ok || !payload.success) {
+    const error = new Error(payload.message || 'Request failed')
+    error.status = response.status
+    error.accountBlocked = Boolean(payload.accountBlocked)
+    error.accountStatus = payload.accountStatus
+    throw error
+  }
+
+  return payload
+}
 
 // In-memory mock collections keep the UI ready for backend integration without changing page code.
 let mockUsers = [
@@ -160,6 +198,34 @@ export const fetcher = async (request) => {
 }
 
 export const api = {
+  loginAdmin: ({ email, password }) =>
+    fetcher(async () => {
+      const response = await requestBackend('/admin/auth/login', {
+        method: 'POST',
+        body: { email, password },
+      })
+
+      return createApiResponse(response.data?.admin, response.message)
+    }),
+  getAdminSession: () =>
+    fetcher(async () => {
+      const response = await requestBackend('/admin/auth/me')
+      return createApiResponse(response.data?.admin, response.message)
+    }),
+  refreshAdminSession: () =>
+    fetcher(async () => {
+      const response = await requestBackend('/admin/auth/refresh-token', {
+        method: 'POST',
+      })
+      return createApiResponse(response.data?.admin, response.message)
+    }),
+  logoutAdmin: () =>
+    fetcher(async () => {
+      const response = await requestBackend('/admin/auth/logout', {
+        method: 'POST',
+      })
+      return createApiResponse(null, response.message)
+    }),
   getDashboard: () =>
     fetcher(() => {
       const activeProducts = mockProducts.filter((product) => !product.is_deleted)
@@ -225,35 +291,54 @@ export const api = {
 
       return createApiResponse(dashboardPayload, 'Dashboard loaded')
     }),
-  getUsers: ({ search = '', page = 1, limit = 5 } = {}) =>
-    fetcher(() => {
-      const filteredUsers = mockUsers.filter((user) => matchesSearchTerm(user, search))
-      const { data, pagination } = paginateCollection(filteredUsers, { page, limit })
-      return createApiResponse(data, 'Users loaded', pagination)
+  getUsers: ({ search = '', status = '', page = 1, limit = 5 } = {}) =>
+    fetcher(async () => {
+      const response = await requestBackend('/admin/users', {
+        query: { search, status, page, limit },
+      })
+
+      return createApiResponse(response.data, response.message, response.pagination)
     }),
   updateUserStatus: (userId, status) =>
-    fetcher(() => {
-      mockUsers = mockUsers.map((user) => (user.id === userId ? { ...user, status } : user))
-      return createApiResponse(mockUsers.find((user) => user.id === userId), 'User status updated')
+    fetcher(async () => {
+      const response = await requestBackend(`/admin/users/${userId}/status`, {
+        method: 'PATCH',
+        body: { status },
+      })
+
+      return createApiResponse(response.data, response.message)
     }),
   getProducts: ({ search = '', status = '', page = 1, limit = 5 } = {}) =>
-    fetcher(() => {
-      const filteredProducts = mockProducts.filter(
-        (product) => !product.is_deleted && matchesSearchTerm(product, search) && (!status || product.status === status),
-      )
-      const { data, pagination } = paginateCollection(filteredProducts, { page, limit })
-      return createApiResponse(data, 'Products loaded', pagination)
+    fetcher(async () => {
+      const response = await requestBackend('/admin/products', {
+        query: { search, status, page, limit },
+      })
+
+      return createApiResponse(response.data, response.message, response.pagination)
     }),
   updateProduct: (productId, updates) =>
-    fetcher(() => {
-      mockProducts = mockProducts.map((product) => (product.id === productId ? { ...product, ...updates } : product))
-      return createApiResponse(mockProducts.find((product) => product.id === productId), 'Product updated')
+    fetcher(async () => {
+      if (updates.is_deleted) {
+        const response = await requestBackend(`/admin/products/${productId}/soft-delete`, {
+          method: 'PATCH',
+        })
+        return createApiResponse(response.data, response.message)
+      }
+
+      const response = await requestBackend(`/admin/products/${productId}/status`, {
+        method: 'PATCH',
+        body: { status: updates.status },
+      })
+
+      return createApiResponse(response.data, response.message)
     }),
   hardDeleteProduct: (productId) =>
-    fetcher(() => {
-      mockProducts = mockProducts.filter((product) => product.id !== productId)
-      mockReports = mockReports.filter((report) => report.productId !== productId)
-      return createApiResponse({ id: productId }, 'Product permanently deleted')
+    fetcher(async () => {
+      const response = await requestBackend(`/admin/products/${productId}`, {
+        method: 'DELETE',
+      })
+
+      return createApiResponse(response.data, response.message)
     }),
   getReports: ({ search = '', page = 1, limit = 5 } = {}) =>
     fetcher(() => {

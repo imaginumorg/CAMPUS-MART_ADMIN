@@ -1,12 +1,14 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 const ProfileMenu = () => {
   const menuRef = useRef(null)
   const location = useLocation()
   const navigate = useNavigate()
   const { admin, logout } = useAuth()
+  const { showToast } = useToast()
   const [openPath, setOpenPath] = useState('')
 
   const isOpen = openPath === location.pathname
@@ -22,8 +24,9 @@ const ProfileMenu = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [])
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
+    showToast({ type: 'success', message: 'Logged out successfully' })
     navigate('/login', { replace: true })
   }
 
@@ -37,7 +40,7 @@ const ProfileMenu = () => {
         <div className="hidden items-center gap-3 md:flex">
           <div className="text-right">
             <p className="text-sm font-semibold text-[#0B1220]">{admin?.name || 'Admin User'}</p>
-            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#64748B]">Superuser</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#64748B]">{admin?.roleLabel || 'Superuser'}</p>
           </div>
           <div className="h-9 w-px bg-[#E2E8F0]" />
         </div>

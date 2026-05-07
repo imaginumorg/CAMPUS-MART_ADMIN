@@ -4,6 +4,7 @@ import Loader from '../components/Loader'
 import { useFetch } from '../hooks/useFetch'
 import { api } from '../services/api'
 import { PRODUCT_STATUS } from '../utils/constants'
+import { useToast } from '../context/ToastContext'
 
 const productActionConfig = {
   block: {
@@ -34,12 +35,34 @@ const productImageGradients = [
   'from-[#EDE9FE] to-[#7C3AED]',
 ]
 
+const statusChipStyles = {
+  [PRODUCT_STATUS.LISTED]: 'bg-[#EEF2FF] text-primary',
+  [PRODUCT_STATUS.UNLISTED]: 'bg-[#F1F5F9] text-[#475569]',
+  [PRODUCT_STATUS.SOLD]: 'bg-[#ECFDF3] text-[#15803D]',
+  [PRODUCT_STATUS.BLOCKED]: 'bg-[#FEF2F2] text-[#DC2626]',
+}
+
+const statusLabels = {
+  [PRODUCT_STATUS.LISTED]: 'Listed',
+  [PRODUCT_STATUS.UNLISTED]: 'Unlisted',
+  [PRODUCT_STATUS.SOLD]: 'Sold',
+  [PRODUCT_STATUS.BLOCKED]: 'Blocked',
+}
+
+const formatDisplayDate = (dateValue) =>
+  new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  }).format(new Date(dateValue))
+
 const Products = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pendingProductAction, setPendingProductAction] = useState(null)
+  const { showToast } = useToast()
 
   useEffect(() => {
     const debounceTimer = window.setTimeout(() => {
@@ -58,15 +81,23 @@ const Products = () => {
 
   const handleProductAction = useCallback(
     async (action, product) => {
-      if (action === 'unlist') {
-        await api.updateProduct(product.id, { status: PRODUCT_STATUS.UNLISTED })
+      if (action === 'toggle_listing') {
+        const nextStatus = product.status === PRODUCT_STATUS.LISTED ? PRODUCT_STATUS.UNLISTED : PRODUCT_STATUS.LISTED
+        const response = await api.updateProduct(product.id, { status: nextStatus })
+
+        if (response.success) {
+          showToast({ type: 'success', message: nextStatus === PRODUCT_STATUS.LISTED ? 'Product listed successfully' : 'Product unlisted successfully' })
+        } else {
+          showToast({ type: 'error', message: response.message })
+        }
+
         refetch()
         return
       }
 
       setPendingProductAction({ action, product })
     },
-    [refetch],
+    [refetch, showToast],
   )
 
   const confirmProductAction = useCallback(async () => {
@@ -74,13 +105,21 @@ const Products = () => {
 
     const { action, product } = pendingProductAction
 
-    if (action === 'block') await api.updateProduct(product.id, { status: PRODUCT_STATUS.BLOCKED })
-    if (action === 'soft_delete') await api.updateProduct(product.id, { is_deleted: true })
-    if (action === 'hard_delete') await api.hardDeleteProduct(product.id)
+    let response
+
+    if (action === 'block') response = await api.updateProduct(product.id, { status: PRODUCT_STATUS.BLOCKED })
+    if (action === 'soft_delete') response = await api.updateProduct(product.id, { is_deleted: true })
+    if (action === 'hard_delete') response = await api.hardDeleteProduct(product.id)
+
+    if (response?.success) {
+      showToast({ type: 'success', message: response.message })
+    } else {
+      showToast({ type: 'error', message: response?.message || 'Product action failed' })
+    }
 
     setPendingProductAction(null)
     refetch()
-  }, [pendingProductAction, refetch])
+  }, [pendingProductAction, refetch, showToast])
 
   const selectedAction = pendingProductAction ? productActionConfig[pendingProductAction.action] : null
 
@@ -152,26 +191,24 @@ const Products = () => {
                         <span className="text-[14px] font-medium text-[#0B1220]">{product.product}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-[12px] text-[#64748B]">849201748291045</td>
-                    <td className="px-4 py-4 text-[12px] text-[#64748B]">SL-{99210 + index * 2324}</td>
+                    <td className="px-4 py-4 text-[12px] text-[#64748B]">{product.id}</td>
+                    <td className="px-4 py-4 text-[12px] text-[#64748B]">{product.seller?.name || product.sellerId}</td>
                     <td className="px-4 py-4 text-[14px] text-[#0B1220]">{product.category}</td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${
-                        index === 0 ? 'bg-[#EEF2FF] text-primary' : product.reports >= 3 ? 'bg-[#EEF2FF] text-primary' : 'bg-[#F1F5F9] text-[#475569]'
-                      }`}>
-                        {index === 0 ? 'Live' : product.reports >= 3 ? 'Auto Flagged' : 'Pending'}
+                      <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${statusChipStyles[product.status] || 'bg-[#F1F5F9] text-[#475569]'}`}>
+                        {statusLabels[product.status] || product.status}
                       </span>
                     </td>
                     <td className={`px-4 py-4 text-[14px] font-medium ${product.reports >= 3 ? 'text-[#DC2626]' : 'text-[#0F172A]'}`}>{product.reports}</td>
-                    <td className="px-4 py-4 text-[13px] text-[#334155]">{index === 0 ? 'Oct 12, 2023' : index === 1 ? 'Nov 05, 2023' : 'Nov 18, 2023'}</td>
+                    <td className="px-4 py-4 text-[13px] text-[#334155]">{formatDisplayDate(product.created || product.createdAt)}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2 whitespace-nowrap">
                         <button
                           type="button"
-                          onClick={() => handleProductAction('unlist', product)}
+                          onClick={() => handleProductAction('toggle_listing', product)}
                           className="rounded-xl bg-[#F8FAFC] px-4 py-2.5 text-[12px] font-medium text-[#475569]"
                         >
-                          Unlist
+                          {product.status === PRODUCT_STATUS.LISTED ? 'Unlist' : 'List'}
                         </button>
                         <button
                           type="button"

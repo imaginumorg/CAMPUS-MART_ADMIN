@@ -1,23 +1,32 @@
 import { memo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 
 const Login = () => {
   const [emailAddress, setEmailAddress] = useState('')
   const [passwordValue, setPasswordValue] = useState('')
   const [loginErrorMessage, setLoginErrorMessage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { login } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
 
-  const handleLoginSubmit = (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault()
-    const loginResult = login(emailAddress, passwordValue)
+    setLoginErrorMessage('')
+    setIsSubmitting(true)
+
+    const loginResult = await login(emailAddress, passwordValue)
+    setIsSubmitting(false)
 
     if (loginResult.success) {
+      showToast({ type: 'success', message: loginResult.message || 'Signed in successfully' })
       navigate('/dashboard', { replace: true })
       return
     }
 
+    showToast({ type: 'error', message: loginResult.message })
     setLoginErrorMessage(loginResult.message)
   }
 
@@ -102,8 +111,12 @@ const Login = () => {
 
                     {loginErrorMessage && <p className="mt-4 rounded-xl border border-neutral-300 bg-[#EEF1F5] px-4 py-3 text-sm font-semibold text-primary">{loginErrorMessage}</p>}
 
-                    <button type="submit" className="mt-5 w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#3838EC]">
-                      Login
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="mt-5 w-full rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#3838EC] disabled:cursor-not-allowed disabled:bg-[#A5B4FC]"
+                    >
+                      {isSubmitting ? 'Signing in...' : 'Login'}
                     </button>
                   </div>
                 </form>

@@ -14,7 +14,9 @@ const Notification = lazy(() => import('./pages/Notification'))
 const Settings = lazy(() => import('./pages/Settings'))
 
 const App = () => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, sessionLoading } = useAuth()
+
+  if (sessionLoading) return <Loader />
 
   return (
     <Suspense fallback={<Loader />}>

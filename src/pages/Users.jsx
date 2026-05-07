@@ -5,6 +5,7 @@ import Loader from '../components/Loader'
 import { useFetch } from '../hooks/useFetch'
 import { api } from '../services/api'
 import { USER_STATUS } from '../utils/constants'
+import { useToast } from '../context/ToastContext'
 
 const userProfileGradients = [
   'from-[#6B7280] to-[#111827]',
@@ -13,22 +14,18 @@ const userProfileGradients = [
   'from-[#E2B38B] to-[#F8D5C2]',
 ]
 
-const userTierContent = [
-  { label: 'Pro+', className: 'bg-[#FEF3C7] text-[#92400E]' },
-  { label: 'Basic', className: 'bg-[#F1F5F9] text-[#334155]' },
-  { label: 'Pro+', className: 'bg-[#FEF3C7] text-[#92400E]' },
-  { label: 'Pro', className: 'bg-[#DCFCE7] text-[#15803D]' },
-]
-
 const statusChipStyles = {
   [USER_STATUS.ACTIVE]: 'bg-[#ECFDF3] text-[#15803D]',
   [USER_STATUS.INACTIVE]: 'bg-[#F1F5F9] text-[#475569]',
   [USER_STATUS.SUSPENDED]: 'bg-[#FEF2F2] text-[#DC2626]',
 }
 
-const userLocations = ['London, UK', 'Madrid, ES', 'Berlin, DE', 'New York, US']
-const userJoinedDates = ['Oct 12, 2023', 'Nov 04, 2023', 'Jan 18, 2024', 'Feb 11, 2024']
-const userEmails = ['m.thorne@example.com', 'elena.rod@example.org', 'sk@kael-tech.com', 'jenkins.s@cloudscale.net']
+const formatDisplayDate = (dateValue) =>
+  new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  }).format(new Date(dateValue))
 
 const Users = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -36,8 +33,8 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pendingUserSuspension, setPendingUserSuspension] = useState(null)
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('')
-  const [selectedTierFilter, setSelectedTierFilter] = useState('')
   const [joinDateOrder, setJoinDateOrder] = useState('newest')
+  const { showToast } = useToast()
 
   useEffect(() => {
     const debounceTimer = window.setTimeout(() => {
@@ -48,7 +45,10 @@ const Users = () => {
     return () => window.clearTimeout(debounceTimer)
   }, [searchQuery])
 
-  const loadUsers = useCallback(() => api.getUsers({ search: debouncedSearchQuery, page: currentPage }), [debouncedSearchQuery, currentPage])
+  const loadUsers = useCallback(
+    () => api.getUsers({ search: debouncedSearchQuery, status: selectedStatusFilter, page: currentPage }),
+    [debouncedSearchQuery, selectedStatusFilter, currentPage],
+  )
   const { data: fetchedUsers, pagination, loading, error, refetch } = useFetch(loadUsers)
   const users = useMemo(() => fetchedUsers ?? [], [fetchedUsers])
 
@@ -56,12 +56,9 @@ const Users = () => {
     () =>
       users.map((user, index) => ({
         ...user,
-        displayTier: userTierContent[index % userTierContent.length],
-        displayLocation: userLocations[index % userLocations.length],
         displayGradient: userProfileGradients[index % userProfileGradients.length],
-        displayJoinedDate: userJoinedDates[index % userJoinedDates.length],
-        displayId: `${8829 + index * 275}-${10293 + index * 298}-${44102 + index * 972}`,
-        displayEmail: userEmails[index % userEmails.length],
+        displayJoinedDate: user.joined ? formatDisplayDate(user.joined) : 'Not available',
+        displayId: user.id,
       })),
     [users],
   )
@@ -69,18 +66,12 @@ const Users = () => {
   const visibleUsers = useMemo(
     () =>
       decoratedUsers
-        .filter((user) => {
-          const tierLabel = user.displayTier.label.toLowerCase()
-          const matchesStatus = !selectedStatusFilter || user.status === selectedStatusFilter
-          const matchesTier = !selectedTierFilter || tierLabel === selectedTierFilter
-          return matchesStatus && matchesTier
-        })
         .sort((leftUser, rightUser) =>
           joinDateOrder === 'oldest'
             ? new Date(leftUser.joined).getTime() - new Date(rightUser.joined).getTime()
             : new Date(rightUser.joined).getTime() - new Date(leftUser.joined).getTime(),
         ),
-    [decoratedUsers, joinDateOrder, selectedStatusFilter, selectedTierFilter],
+    [decoratedUsers, joinDateOrder],
   )
 
   const handleUserStatusUpdate = useCallback(
@@ -91,25 +82,38 @@ const Users = () => {
         return
       }
 
-      await api.updateUserStatus(userId, nextStatus)
+      const response = await api.updateUserStatus(userId, nextStatus)
+
+      if (response.success) {
+        showToast({ type: 'success', message: response.message })
+      } else {
+        showToast({ type: 'error', message: response.message })
+      }
+
       refetch()
     },
-    [users, refetch],
+    [users, refetch, showToast],
   )
 
   const confirmUserSuspension = useCallback(async () => {
     if (!pendingUserSuspension) return
 
-    await api.updateUserStatus(pendingUserSuspension.id, USER_STATUS.SUSPENDED)
+    const response = await api.updateUserStatus(pendingUserSuspension.id, USER_STATUS.SUSPENDED)
+
+    if (response.success) {
+      showToast({ type: 'success', message: response.message })
+    } else {
+      showToast({ type: 'error', message: response.message })
+    }
+
     setPendingUserSuspension(null)
     refetch()
-  }, [pendingUserSuspension, refetch])
+  }, [pendingUserSuspension, refetch, showToast])
 
   const resetFilters = () => {
     setSearchQuery('')
     setDebouncedSearchQuery('')
     setSelectedStatusFilter('')
-    setSelectedTierFilter('')
     setJoinDateOrder('newest')
     setCurrentPage(1)
   }
@@ -134,7 +138,7 @@ const Users = () => {
         </button>
       </div>
 
-      <section className="rounded-[18px] bg-white p-3.5 shadow-sm">
+      <div>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white px-4 py-2.5">
             <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#94A3B8]" fill="none" stroke="currentColor" strokeWidth="2">
@@ -153,23 +157,16 @@ const Users = () => {
           <div className="flex flex-wrap items-center gap-3">
             <select
               value={selectedStatusFilter}
-              onChange={(event) => setSelectedStatusFilter(event.target.value)}
+              onChange={(event) => {
+                setSelectedStatusFilter(event.target.value)
+                setCurrentPage(1)
+              }}
               className="h-10 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#0B1220] outline-none"
             >
               <option value="">Status: All</option>
               <option value={USER_STATUS.ACTIVE}>Active</option>
               <option value={USER_STATUS.INACTIVE}>Inactive</option>
               <option value={USER_STATUS.SUSPENDED}>Suspended</option>
-            </select>
-            <select
-              value={selectedTierFilter}
-              onChange={(event) => setSelectedTierFilter(event.target.value)}
-              className="h-10 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#0B1220] outline-none"
-            >
-              <option value="">Tier: All</option>
-              <option value="basic">Basic</option>
-              <option value="pro">Pro</option>
-              <option value="pro+">Pro+</option>
             </select>
             <button
               type="button"
@@ -194,7 +191,7 @@ const Users = () => {
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
       {error ? (
         <EmptyState message={error} />
@@ -229,14 +226,14 @@ const Users = () => {
                         </div>
                         <div>
                           <p className="text-[14px] font-semibold text-[#0B1220]">{user.name}</p>
-                          <p className="text-[12px] text-[#64748B]">{user.displayLocation}</p>
+                          <p className="text-[12px] text-[#64748B]">N/A</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${user.displayTier.className}`}>{user.displayTier.label}</span>
+                      <span className="inline-flex rounded-full bg-[#F1F5F9] px-3 py-1 text-[11px] font-semibold text-[#64748B]">N/A</span>
                     </td>
-                    <td className="px-4 py-4 text-[13px] text-[#334155]">{user.displayEmail}</td>
+                    <td className="px-4 py-4 text-[13px] text-[#334155]">{user.email}</td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${statusChipStyles[user.status]}`}>
                         <span className="text-[10px] leading-none">•</span>
