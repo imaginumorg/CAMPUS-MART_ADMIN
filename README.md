@@ -1,16 +1,84 @@
-# React + Vite
+# Campus Mart Admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Admin portal frontend for moderation and marketplace operations.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- React Router DOM 6
+- Vite 5
+- Tailwind CSS 4
+- ESLint
 
-## React Compiler
+## Implemented Routes
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `/login` - admin login screen
+- `/dashboard` - control center stats, queue, and activity feed
+- `/users` - user listing with search, status filter, date sorting, pagination, and status update actions
+- `/products` - product listing with search, status filter, pagination, and moderation actions (list/unlist, block, soft delete, hard delete)
+- `/reports` - report moderation with two modes:
+  - user reports (review and set status: dismissed, warned, suspended, banned)
+  - product reports (block product or ignore report)
+- `/analytics` - analytics placeholder section
+- `/notification` - notification composer UI, preview, and recent broadcasts list
+- `/settings` - read-only moderation settings view
 
-## Expanding the ESLint configuration
+## Authentication and Session
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Auth state is managed in `src/context/AuthContext.jsx`.
+- Session data is stored in `localStorage` under `campus_mart_admin`.
+- Protected routes are wrapped by `src/routes/AdminRoutes.jsx`.
+- On app start, session restore flow runs in this order:
+  1. `GET /admin/auth/me`
+  2. If needed, `POST /admin/auth/refresh-token`
+- Login and logout calls:
+  - `POST /admin/auth/login`
+  - `POST /admin/auth/logout`
+
+## API Layer
+
+- Base URL is read from `VITE_API_BASE_URL` and defaults to `http://localhost:5000/api`.
+- Requests use `fetch` with `credentials: 'include'`.
+- API helpers live in `src/services/api.js`.
+- Hook `src/hooks/useFetch.js` handles loading, error, response data, pagination, and refetch.
+
+### Backend endpoints used by this frontend
+
+- `GET /admin/auth/me`
+- `POST /admin/auth/login`
+- `POST /admin/auth/refresh-token`
+- `POST /admin/auth/logout`
+- `GET /admin/users`
+- `PATCH /admin/users/:userId/status`
+- `GET /admin/products`
+- `PATCH /admin/products/:productId/status`
+- `PATCH /admin/products/:productId/soft-delete`
+- `DELETE /admin/products/:productId`
+
+### In-memory data used in current frontend
+
+The following sections currently use in-memory collections inside `src/services/api.js`:
+
+- dashboard payload (`getDashboard`)
+- product reports (`getReports`)
+- user reports (`getUserReports`, `getUserReportById`, `updateUserReportStatus`)
+- notification center payload (`getNotificationCenter`)
+- report ignore state (`ignoreReport`)
+
+## Setup
+
+1. Install dependencies:
+   - `npm install`
+2. Create `.env` from `.env.sample` and set:
+   - `VITE_API_BASE_URL=`
+3. Start development server:
+   - `npm run dev`
+
+Default dev server port is `5174`.
+
+## Scripts
+
+- `npm run dev` - start Vite dev server on port 5174
+- `npm run build` - create production build
+- `npm run preview` - preview production build
+- `npm run lint` - run ESLint
