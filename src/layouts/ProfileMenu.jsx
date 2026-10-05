@@ -35,7 +35,7 @@ const ProfileMenu = () => {
       <button
         type="button"
         onClick={() => setOpenPath((currentPath) => (currentPath === location.pathname ? '' : location.pathname))}
-        className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[#F8FAFC]"
+        className="flex items-center gap-3 rounded-xl border border-transparent px-2 py-1.5 transition hover:border-[#E2E8F0] hover:bg-[#F8FAFC]"
       >
         <div className="hidden items-center gap-3 md:flex">
           <div className="text-right">
@@ -44,7 +44,7 @@ const ProfileMenu = () => {
           </div>
           <div className="h-9 w-px bg-[#E2E8F0]" />
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#64748B] to-[#0F172A] text-sm font-semibold text-white ring-2 ring-[#E2E8F0]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#0F172A] text-sm font-semibold text-white ring-2 ring-[#E2E8F0]">
           {admin?.initials || 'AU'}
         </div>
       </button>

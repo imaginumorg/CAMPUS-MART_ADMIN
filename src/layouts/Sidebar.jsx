@@ -102,7 +102,7 @@ const navigationGroups = navigationItems.reduce((groups, item) => {
   return groups
 }, new Map())
 
-const Sidebar = ({ open, onClose }) => {
+const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
   const navigate = useNavigate()
   const { logout } = useAuth()
 
@@ -115,36 +115,71 @@ const Sidebar = ({ open, onClose }) => {
   return (
     <>
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col border-r border-[#E8ECF4] bg-white transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[272px] flex-col border-r border-[#E3E8F2] bg-white shadow-xl transition-[width,transform] duration-200 lg:static lg:translate-x-0 lg:shadow-none ${
+          collapsed ? 'lg:w-[84px]' : 'lg:w-[272px]'
+        } ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="border-b border-[#EEF1F5] px-5 py-6">
-          <p className="text-[17px] font-bold text-[#0B1220]">Campus Mart</p>
-          <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#64748B]">Admin Portal</p>
+        <div className={`border-b border-[#EEF1F5] px-4 py-5 ${collapsed ? 'lg:px-3' : ''}`}>
+          <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : 'justify-between'}`}>
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] ring-1 ring-[#DDE3FF]">
+                <img src="/unideals-logo.svg" alt="UniDeals" className="h-7 w-7 object-contain" />
+              </span>
+              <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
+                <p className="truncate text-[18px] font-bold text-[#0B1220]">UniDeals</p>
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Admin Portal</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#334155] transition hover:bg-[#F8FAFC] lg:inline-flex ${collapsed ? 'lg:hidden' : ''}`}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#334155] lg:hidden"
+            aria-label="Close menu"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-5">
-          <div className="space-y-6">
+        <nav className={`flex-1 overflow-y-auto py-5 ${collapsed ? 'lg:px-3' : 'px-3'}`}>
+          <div className={collapsed ? 'space-y-4 lg:space-y-2' : 'space-y-6'}>
             {Array.from(navigationGroups.entries()).map(([section, items]) => (
               <div key={section}>
-                <p className="px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8]">{section}</p>
+                <p className={`px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8] ${collapsed ? 'lg:hidden' : ''}`}>{section}</p>
                 <div className="mt-2 space-y-1">
                   {items.map((item) => (
                     <NavLink
                       key={item.path}
                       to={item.path}
+                      title={collapsed ? item.label : undefined}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-none border-r-4 px-4 py-2.5 text-[14px] font-medium transition ${
+                        `flex min-h-11 items-center gap-3 border-r-4 text-[14px] font-medium transition ${
+                          collapsed ? 'lg:justify-center lg:px-0' : 'px-4'
+                        } py-2.5 ${
                           isActive
-                            ? 'border-primary bg-[#EEF2FF] text-primary'
+                            ? 'border-primary bg-[#EEF2FF] text-primary shadow-sm'
                             : 'border-transparent text-[#334155] hover:bg-[#F8FAFC]'
                         }`
                       }
                     >
                       <span className="text-current">{item.icon}</span>
-                      <span>{item.label}</span>
+                      <span className={collapsed ? 'lg:hidden' : ''}>{item.label}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -153,29 +188,31 @@ const Sidebar = ({ open, onClose }) => {
           </div>
         </nav>
 
-        <div className="mt-auto border-t border-[#EEF1F5] px-3 py-3">
+        <div className={`mt-auto border-t border-[#EEF1F5] px-3 py-3 ${collapsed ? 'lg:px-3' : ''}`}>
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-[14px] font-medium text-[#334155] transition hover:bg-[#F8FAFC]"
+            title={collapsed ? 'Help Center' : undefined}
+            className={`flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#334155] transition hover:bg-[#F8FAFC] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M12 16v.01" />
               <path d="M12 8a2 2 0 0 1 2 2c0 1.4-2 2-2 4" />
             </svg>
-            <span>Help Center</span>
+            <span className={collapsed ? 'lg:hidden' : ''}>Help Center</span>
           </button>
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-2 flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-[14px] font-medium text-[#DC2626] transition hover:bg-[#FEF2F2]"
+            title={collapsed ? 'Log Out' : undefined}
+            className={`mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#DC2626] transition hover:bg-[#FEF2F2] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <path d="M16 17l5-5-5-5" />
               <path d="M21 12H9" />
             </svg>
-            <span>Log Out</span>
+            <span className={collapsed ? 'lg:hidden' : ''}>Log Out</span>
           </button>
         </div>
       </aside>

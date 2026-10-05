@@ -22,11 +22,44 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #FCFCFC;
+  background:
+    linear-gradient(180deg, rgba(238, 242, 255, 0.42) 0%, rgba(244, 246, 250, 0.94) 34%, #F4F6FA 100%);
   color: #0F172A;
   font-family: "Figtree", ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
   overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(56, 56, 236, 0.16);
+  color: #0B1220;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(56, 56, 236, 0.22);
+  outline-offset: 2px;
 }
 
 button,

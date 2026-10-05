@@ -226,7 +226,7 @@ const Notification = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#0B1220]">
-                      {channelMode === 'in_app' ? 'Campus Mart' : 'Email Alert'}
+                      {channelMode === 'in_app' ? 'UniDeals' : 'Email Alert'}
                     </span>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#CBD5E1]">
                       {deliveryMode === 'schedule' ? 'Scheduled' : 'Now'}

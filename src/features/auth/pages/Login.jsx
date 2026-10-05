@@ -42,10 +42,10 @@ const Login = () => {
                   <div className="relative z-10 flex h-full flex-col justify-between">
                     <div>
                       <div className="inline-flex rounded-xl bg-white px-4 py-2 text-sm font-bold text-primary shadow-sm">
-                        Campus Mart Admin
+                        UniDeals Admin
                       </div>
                       <p className="mt-6 max-w-sm text-3xl font-bold leading-tight text-[#64707D]">
-                        Review listings, reports, and seller activity from one focused workspace.
+                        Review deals, reports, and seller activity from one focused workspace.
                       </p>
                     </div>
                     <div className="login-illustration-scene">
@@ -71,11 +71,11 @@ const Login = () => {
                 <form onSubmit={handleLoginSubmit} className="flex items-center bg-white p-6 sm:p-10">
                   <div className="mx-auto w-full max-w-sm">
                     <div className="mb-8 text-center">
-                      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white">
-                        CM
+                      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF2FF] ring-1 ring-[#DDE3FF]">
+                        <img src="/unideals-logo.svg" alt="UniDeals" className="h-10 w-10 object-contain" />
                       </div>
                       <h1 className="text-3xl font-bold text-[#111827]">Login</h1>
-                      <p className="mt-2 text-sm text-[#7A8697]">Moderator access for Campus Mart</p>
+                      <p className="mt-2 text-sm text-[#7A8697]">Moderator access for UniDeals</p>
                     </div>
 
                     <div className="space-y-4">

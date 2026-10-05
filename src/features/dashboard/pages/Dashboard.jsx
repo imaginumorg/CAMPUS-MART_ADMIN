@@ -21,8 +21,8 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220]">Admin Control Center</h1>
-        <div className="mt-2 flex items-center gap-3 text-[14px] text-primary">
+        <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220] sm:text-[28px]">UniDeals Control Center</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[14px] text-primary">
           <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary">
             <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="m5 12 5 5L20 7" />
@@ -36,7 +36,7 @@ const Dashboard = () => {
         <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-3">
             {dashboardData.stats.map((statCard, index) => (
-              <article key={statCard.label} className={`rounded-[20px] bg-white p-5 shadow-sm ${statsAccent[index]}`}>
+              <article key={statCard.label} className={`rounded-[18px] bg-white p-5 shadow-sm ring-1 ring-[#E8ECF4] ${statsAccent[index]}`}>
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">{statCard.label}</p>
@@ -74,7 +74,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          <section className="rounded-[24px] bg-white p-6 shadow-sm">
+          <section className="rounded-[20px] bg-white p-5 shadow-sm ring-1 ring-[#E8ECF4] sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-[19px] font-semibold text-[#0B1220]">Priority queue</h2>
               <button type="button" className="text-[14px] font-medium text-primary">
@@ -133,7 +133,7 @@ const Dashboard = () => {
           </section>
         </div>
 
-        <section className="rounded-[24px] bg-white shadow-sm">
+        <section className="rounded-[20px] bg-white shadow-sm ring-1 ring-[#E8ECF4]">
           <div className="border-b border-[#EEF1F5] px-6 py-6">
             <h2 className="text-[19px] font-semibold text-[#0B1220]">Recent Moderation Activity</h2>
           </div>

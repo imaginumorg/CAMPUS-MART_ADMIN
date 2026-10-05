@@ -7,6 +7,7 @@ import { useAuth } from '../features/auth/context/AuthContext'
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const { isAuthenticated, sessionLoading } = useAuth()
 
   if (sessionLoading) return <Loader />
@@ -14,11 +15,20 @@ const AdminLayout = () => {
   if (!isAuthenticated) return <Navigate to="/login" replace />
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] lg:flex">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen bg-[#F4F6FA] lg:flex">
+      <Sidebar
+        open={sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={() => setSidebarCollapsed((currentValue) => !currentValue)}
+      />
       <div className="min-w-0 flex-1">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="mx-auto w-full max-w-[1240px] p-3.5 lg:p-4">
+        <Navbar
+          sidebarCollapsed={sidebarCollapsed}
+          onMenuClick={() => setSidebarOpen(true)}
+          onSidebarToggle={() => setSidebarCollapsed((currentValue) => !currentValue)}
+        />
+        <main className="mx-auto w-full max-w-[1440px] px-3 py-4 sm:px-4 lg:px-6 lg:py-6">
           <Suspense fallback={<Loader />}>
             <Outlet />
           </Suspense>

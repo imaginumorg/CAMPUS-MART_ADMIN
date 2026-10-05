@@ -73,8 +73,8 @@ const CampusFormModal = ({ campus, open, onClose, onSubmit }) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 px-4 py-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-2xl rounded-[20px] bg-white p-5 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#0F172A]/40 px-4 py-6">
+      <form onSubmit={handleSubmit} className="max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[20px] bg-white p-5 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-[20px] font-semibold text-[#0B1220]">{campus ? 'Edit campus' : 'Add campus'}</h2>
