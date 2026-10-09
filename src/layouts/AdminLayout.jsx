@@ -20,6 +20,7 @@ const AdminLayout = () => {
         open={sidebarOpen}
         collapsed={sidebarCollapsed}
         onClose={() => setSidebarOpen(false)}
+        onToggleCollapse={() => setSidebarCollapsed((currentValue) => !currentValue)}
       />
       <div className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
         <Navbar

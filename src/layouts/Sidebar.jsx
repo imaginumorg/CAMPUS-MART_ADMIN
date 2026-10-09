@@ -140,42 +140,81 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
   return (
     <>
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[272px] flex-col border-r border-[#E3E8F2] bg-white shadow-xl transition-[width,transform] duration-200 lg:static lg:translate-x-0 lg:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[272px] flex-col border-r border-[#E3E8F2] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] shadow-xl transition-[width,transform] duration-200 lg:static lg:translate-x-0 lg:shadow-none ${
           collapsed ? 'lg:w-[84px]' : 'lg:w-[272px]'
         } ${
           open ? 'translate-x-0' : '-translate-x-full'
         } lg:h-screen lg:shrink-0`}
       >
-        <div className={`border-b border-[#EEF1F5] px-4 py-5 ${collapsed ? 'lg:px-3' : ''}`}>
-          <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : ''}`}>
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] ring-1 ring-[#DDE3FF]">
+        {/* Brand header */}
+        <div className={`border-b border-[#EEF1F5] dark:border-[#2D333B] py-4 ${collapsed ? 'px-2 flex flex-col items-center' : 'px-4'}`}>
+          {!collapsed ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] dark:bg-[#1F293D] ring-1 ring-[#DDE3FF] dark:ring-[#2D333B]">
+                  <img src="/unideals-logo.svg" alt="UniDeals" className="h-7 w-7 object-contain" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[18px] font-bold text-[#0B1220] dark:text-white">UniDeals</p>
+                  <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B] dark:text-[#94A3B8]">Admin Portal</p>
+                </div>
+              </div>
+
+              {/* Collapse arrow button next to UniDeals */}
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+                className="hidden lg:flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#2A2D2E] hover:text-[#0B1220] dark:hover:text-white transition"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              {/* Mobile close button */}
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E2E8F0] dark:border-[#333333] text-[#334155] dark:text-[#CBD5E1] lg:hidden"
+                aria-label="Close menu"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] dark:bg-[#1F293D] ring-1 ring-[#DDE3FF] dark:ring-[#2D333B]">
                 <img src="/unideals-logo.svg" alt="UniDeals" className="h-7 w-7 object-contain" />
               </span>
-              <div className={`min-w-0 ${collapsed ? 'lg:hidden' : ''}`}>
-                <p className="truncate text-[18px] font-bold text-[#0B1220]">UniDeals</p>
-                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Admin Portal</p>
-              </div>
+
+              {/* Menu icon button in place of folder icon to expand sidebar */}
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                aria-label="Expand sidebar"
+                title="Expand sidebar"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E2E8F0] dark:border-[#2D333B] bg-[#F8FAFC] dark:bg-[#161B22] text-[#334155] dark:text-[#CBD5E1] transition hover:bg-[#EEF2FF] dark:hover:bg-[#1F293D] hover:text-primary dark:hover:text-[#58A6FF]"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#334155] lg:hidden"
-            aria-label="Close menu"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </button>
+          )}
         </div>
 
         <nav className={`min-h-0 flex-1 overflow-y-auto py-5 ${collapsed ? 'lg:px-3' : 'px-3'}`}>
           <div className={collapsed ? 'space-y-4 lg:space-y-2' : 'space-y-6'}>
             {Array.from(navigationGroups.entries()).map(([section, items]) => (
               <div key={section}>
-                <p className={`px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8] ${collapsed ? 'lg:hidden' : ''}`}>{section}</p>
+                <p className={`px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#94A3B8] dark:text-[#64748B] ${collapsed ? 'lg:hidden' : ''}`}>{section}</p>
                 <div className="mt-2 space-y-1">
                   {items.map((item) => (
                     <NavLink
@@ -188,8 +227,8 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
                           collapsed ? 'lg:justify-center lg:px-0' : 'px-4'
                         } py-2.5 ${
                           isActive
-                            ? 'border-primary bg-[#EEF2FF] text-primary shadow-sm'
-                            : 'border-transparent text-[#334155] hover:bg-[#F8FAFC]'
+                            ? 'border-primary bg-[#EEF2FF] text-primary dark:bg-[#1F293D] dark:text-[#58A6FF] shadow-sm'
+                            : 'border-transparent text-[#334155] dark:text-[#CBD5E1] hover:bg-[#F8FAFC] dark:hover:bg-[#2A2D2E]'
                         }`
                       }
                     >
@@ -203,11 +242,11 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
           </div>
         </nav>
 
-        <div className={`mt-auto border-t border-[#EEF1F5] px-3 py-3 ${collapsed ? 'lg:px-3' : ''}`}>
+        <div className={`mt-auto border-t border-[#EEF1F5] dark:border-[#2D333B] px-3 py-3 ${collapsed ? 'lg:px-3' : ''}`}>
           <button
             type="button"
             title={collapsed ? 'Help Center' : undefined}
-            className={`flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#334155] transition hover:bg-[#F8FAFC] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
+            className={`flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#334155] dark:text-[#CBD5E1] transition hover:bg-[#F8FAFC] dark:hover:bg-[#2A2D2E] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
@@ -220,7 +259,7 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
             type="button"
             onClick={handleLogout}
             title={collapsed ? 'Log Out' : undefined}
-            className={`mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#DC2626] transition hover:bg-[#FEF2F2] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
+            className={`mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl py-2.5 text-left text-[14px] font-medium text-[#DC2626] transition hover:bg-[#FEF2F2] dark:hover:bg-[#3E1B1B] ${collapsed ? 'lg:justify-center lg:px-0' : 'px-4'}`}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -231,7 +270,7 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
           </button>
         </div>
       </aside>
-      {open && <button type="button" aria-label="Close menu" onClick={onClose} className="fixed inset-0 z-30 bg-[#0F172A]/20 lg:hidden" />}
+      {open && <button type="button" aria-label="Close menu" onClick={onClose} className="fixed inset-0 z-30 bg-[#0F172A]/40 lg:hidden" />}
     </>
   )
 }

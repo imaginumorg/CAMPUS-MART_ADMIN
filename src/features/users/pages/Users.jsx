@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import EmptyState from '../../../shared/components/EmptyState'
 import Modal from '../../../shared/components/Modal'
 import Loader from '../../../shared/components/Loader'
+import Avatar from '../../../shared/components/Avatar'
 import { useFetch } from '../../../shared/hooks/useFetch'
 import { usersApi } from '../api/usersApi'
 import { USER_STATUS } from '../../../shared/constants/constants'
@@ -17,9 +18,9 @@ const userProfileGradients = [
 ]
 
 const statusChipStyles = {
-  [USER_STATUS.ACTIVE]: 'bg-[#ECFDF3] text-[#15803D]',
-  [USER_STATUS.INACTIVE]: 'bg-[#F1F5F9] text-[#475569]',
-  [USER_STATUS.SUSPENDED]: 'bg-[#FEF2F2] text-[#DC2626]',
+  [USER_STATUS.ACTIVE]: 'bg-[#ECFDF3] text-[#15803D] dark:bg-[#064E3B]/30 dark:text-[#34D399]',
+  [USER_STATUS.INACTIVE]: 'bg-[#F1F5F9] text-[#475569] dark:bg-[#1E293B] dark:text-[#94A3B8]',
+  [USER_STATUS.SUSPENDED]: 'bg-[#FEF2F2] text-[#DC2626] dark:bg-[#450A0A]/40 dark:text-[#F87171]',
 }
 
 const formatDisplayDate = (dateValue) =>
@@ -28,6 +29,8 @@ const formatDisplayDate = (dateValue) =>
     day: '2-digit',
     year: 'numeric',
   }).format(new Date(dateValue))
+
+const PAGE_SIZE = 10
 
 const Users = () => {
   const { admin } = useAuth()
@@ -51,7 +54,13 @@ const Users = () => {
   }, [searchQuery])
 
   const loadUsers = useCallback(
-    () => usersApi.getUsers({ search: debouncedSearchQuery, status: selectedStatusFilter, page: currentPage }),
+    () =>
+      usersApi.getUsers({
+        search: debouncedSearchQuery,
+        status: selectedStatusFilter,
+        page: currentPage,
+        limit: PAGE_SIZE,
+      }),
     [debouncedSearchQuery, selectedStatusFilter, currentPage],
   )
   const { data: fetchedUsers, pagination, loading, error, refetch } = useFetch(loadUsers)
@@ -70,12 +79,11 @@ const Users = () => {
 
   const visibleUsers = useMemo(
     () =>
-      decoratedUsers
-        .sort((leftUser, rightUser) =>
-          joinDateOrder === 'oldest'
-            ? new Date(leftUser.joined).getTime() - new Date(rightUser.joined).getTime()
-            : new Date(rightUser.joined).getTime() - new Date(leftUser.joined).getTime(),
-        ),
+      decoratedUsers.sort((leftUser, rightUser) =>
+        joinDateOrder === 'oldest'
+          ? new Date(leftUser.joined).getTime() - new Date(rightUser.joined).getTime()
+          : new Date(rightUser.joined).getTime() - new Date(leftUser.joined).getTime(),
+      ),
     [decoratedUsers, joinDateOrder],
   )
 
@@ -137,20 +145,24 @@ const Users = () => {
     setCurrentPage(1)
   }
 
+  const totalUsers = pagination?.total ?? visibleUsers.length
+  const startItem = totalUsers > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0
+  const endItem = totalUsers > 0 ? Math.min(currentPage * PAGE_SIZE, totalUsers) : 0
+
   if (loading && users.length === 0) return <Loader rows={4} columns={7} />
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220]">User Directory</h1>
-          <p className="mt-1 text-[14px] text-[#475569]">Manage platform users, monitor account health, and adjust access permissions.</p>
+          <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220] dark:text-white">User Directory</h1>
+          <p className="mt-1 text-[14px] text-[#475569] dark:text-[#94A3B8]">Manage platform users, monitor account health, and adjust access permissions.</p>
         </div>
       </div>
 
       <div>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white px-4 py-2.5">
+          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#E2E8F0] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] px-4 py-2.5">
             <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#94A3B8]" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
             </svg>
@@ -158,7 +170,7 @@ const Users = () => {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Filter by name, email or user ID..."
-              className="w-full bg-transparent text-sm text-[#0B1220] outline-none placeholder:text-[#64748B]"
+              className="w-full bg-transparent text-sm text-[#0B1220] dark:text-white outline-none placeholder:text-[#64748B] dark:placeholder:text-[#6E7681]"
             />
           </div>
 
@@ -169,7 +181,7 @@ const Users = () => {
                 setSelectedStatusFilter(event.target.value)
                 setCurrentPage(1)
               }}
-              className="h-10 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#0B1220] outline-none"
+              className="h-10 rounded-xl border border-[#E2E8F0] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] px-4 text-sm font-medium text-[#0B1220] dark:text-white outline-none"
             >
               <option value="">Status: All</option>
               <option value={USER_STATUS.ACTIVE}>Active</option>
@@ -179,7 +191,7 @@ const Users = () => {
             <button
               type="button"
               onClick={() => setJoinDateOrder((currentOrder) => (currentOrder === 'newest' ? 'oldest' : 'newest'))}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#334155]"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#E2E8F0] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] px-4 text-sm font-medium text-[#334155] dark:text-[#CBD5E1]"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -187,7 +199,7 @@ const Users = () => {
               </svg>
               {joinDateOrder === 'newest' ? 'Newest First' : 'Oldest First'}
             </button>
-            <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-medium text-[#64748B]">
+            <button type="button" onClick={resetFilters} className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-medium text-[#64748B] dark:text-[#94A3B8]">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12a9 9 0 0 1 15.5-6.4L21 8" />
                 <path d="M21 3v5h-5" />
@@ -203,10 +215,10 @@ const Users = () => {
       {error ? (
         <EmptyState message={error} />
       ) : (
-        <section className="overflow-hidden rounded-[20px] bg-white shadow-sm">
+        <section className="overflow-hidden rounded-[20px] border border-[#EEF1F5] dark:border-[#2D333B] bg-white dark:bg-[#1E1E1E] shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] text-left">
-              <thead className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+              <thead className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B] dark:text-[#8B949E] border-b border-[#EEF1F5] dark:border-[#2D333B]">
                 <tr>
                   <th className="px-5 py-4">User</th>
                   <th className="px-4 py-4">Email</th>
@@ -219,44 +231,44 @@ const Users = () => {
               <tbody>
                 {visibleUsers.length > 0 ? (
                   visibleUsers.map((user) => (
-                    <tr key={user.id} className="border-t border-[#EEF1F5] hover:bg-[#FAFBFF] transition-colors">
+                    <tr key={user.id} className="border-t border-[#EEF1F5] dark:border-[#2D333B] hover:bg-[#FAFBFF] dark:hover:bg-[#252A33] transition-colors">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br ${user.displayGradient} text-xs font-semibold text-white ring-2 ring-[#E2E8F0]`}>
-                            {user.name
-                              .split(' ')
-                              .map((namePart) => namePart[0])
-                              .join('')
-                              .slice(0, 2)}
-                          </div>
+                          <Avatar
+                            src={user.avatar}
+                            name={user.name}
+                            gradient={user.displayGradient}
+                            className="h-10 w-10 text-xs shrink-0"
+                            ringClassName="ring-2 ring-[#E2E8F0] dark:ring-[#333333]"
+                          />
                           <div>
-                            <p className="text-[14px] font-semibold text-[#0B1220]">{user.name}</p>
-                            <p className="text-[11px] text-[#94A3B8]">{user.displayId?.slice(-8).toUpperCase()}</p>
+                            <p className="text-[14px] font-semibold text-[#0B1220] dark:text-[#E2E8F0]">{user.name}</p>
+                            <p className="text-[11px] text-[#94A3B8] dark:text-[#64748B]">{user.displayId?.slice(-8).toUpperCase()}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-[13px] text-[#334155]">{user.email}</td>
+                      <td className="px-4 py-4 text-[13px] text-[#334155] dark:text-[#CBD5E1]">{user.email}</td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${statusChipStyles[user.status]}`}>
                           <span className="text-[10px] leading-none">•</span>
                           <span>{user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span>
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-[14px] font-semibold text-[#0B1220]">{user.listings}</td>
-                      <td className="px-4 py-4 text-[13px] text-[#334155]">{user.displayJoinedDate}</td>
+                      <td className="px-4 py-4 text-[14px] font-semibold text-[#0B1220] dark:text-white">{user.listings}</td>
+                      <td className="px-4 py-4 text-[13px] text-[#334155] dark:text-[#CBD5E1]">{user.displayJoinedDate}</td>
                       <td className="px-5 py-4">
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => setSelectedUserId(user.id)}
-                            className="rounded-xl border border-[#E2E8F0] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#334155] hover:bg-[#F8FAFC] transition"
+                            className="rounded-xl border border-[#E2E8F0] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] px-3 py-1.5 text-[12px] font-semibold text-[#334155] dark:text-[#CBD5E1] hover:bg-[#F8FAFC] dark:hover:bg-[#2A2D2E] transition"
                           >
                             View
                           </button>
                           <select
                             value={user.status}
                             onChange={(event) => handleUserStatusUpdate(user.id, event.target.value)}
-                            className="rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-[13px] font-medium text-[#0B1220] outline-none"
+                            className="rounded-xl border border-[#E2E8F0] dark:border-[#333333] bg-white dark:bg-[#1E1E1E] px-3 py-2 text-[13px] font-medium text-[#0B1220] dark:text-white outline-none"
                           >
                             {Object.values(USER_STATUS).map((statusOption) => (
                               <option key={statusOption} value={statusOption}>
@@ -269,8 +281,8 @@ const Users = () => {
                     </tr>
                   ))
                 ) : (
-                  <tr className="border-t border-[#EEF1F5]">
-                    <td colSpan="6" className="px-5 py-10 text-center text-[14px] text-[#64748B]">
+                  <tr className="border-t border-[#EEF1F5] dark:border-[#2D333B]">
+                    <td colSpan="6" className="px-5 py-10 text-center text-[14px] text-[#64748B] dark:text-[#8B949E]">
                       No users match the current search or filters.
                     </td>
                   </tr>
@@ -279,16 +291,16 @@ const Users = () => {
             </table>
           </div>
 
-          <div className="flex flex-col gap-4 px-5 py-5 text-sm text-[#64748B] md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 px-5 py-5 text-sm text-[#64748B] dark:text-[#8B949E] md:flex-row md:items-center md:justify-between border-t border-[#EEF1F5] dark:border-[#2D333B]">
             <span>
-              Showing {visibleUsers.length > 0 ? `1-${visibleUsers.length}` : '0'} of {pagination?.total || 0} users
+              Showing {totalUsers > 0 ? `${startItem}-${endItem}` : '0'} of {totalUsers} users
             </span>
             <div className="flex gap-3">
               <button
                 type="button"
                 disabled={!pagination || pagination.page <= 1}
                 onClick={() => setCurrentPage((currentValue) => Math.max(1, currentValue - 1))}
-                className="rounded-xl border border-[#E2E8F0] px-4 py-2 text-[#334155] disabled:text-[#CBD5E1]"
+                className="rounded-xl border border-[#E2E8F0] dark:border-[#333333] px-4 py-2 text-[#334155] dark:text-[#CBD5E1] disabled:text-[#CBD5E1] dark:disabled:text-[#4A5568]"
               >
                 Previous
               </button>
@@ -296,7 +308,7 @@ const Users = () => {
                 type="button"
                 disabled={!pagination || pagination.page >= pagination.totalPages}
                 onClick={() => setCurrentPage((currentValue) => currentValue + 1)}
-                className="rounded-xl border border-primary px-4 py-2 font-medium text-primary disabled:border-[#E2E8F0] disabled:text-[#CBD5E1]"
+                className="rounded-xl border border-primary px-4 py-2 font-medium text-primary disabled:border-[#E2E8F0] dark:disabled:border-[#333333] disabled:text-[#CBD5E1] dark:disabled:text-[#4A5568]"
               >
                 Next
               </button>

@@ -1,7 +1,7 @@
 import { createApiResponse, fetcher, requestBackend } from '../../../shared/lib/apiClient'
 
 export const usersApi = {
-  getUsers: ({ search = '', status = '', page = 1, limit = 5 } = {}) =>
+  getUsers: ({ search = '', status = '', page = 1, limit = 10 } = {}) =>
     fetcher(async () => {
       const response = await requestBackend('/admin/users', {
         query: { search, status, page, limit },
