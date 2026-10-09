@@ -58,6 +58,17 @@ const navigationItems = [
   },
   {
     section: 'Moderation',
+    label: 'Moderation Queue',
+    path: '/moderation',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    ),
+  },
+  {
+    section: 'Moderation',
     label: 'Reports',
     path: '/reports',
     icon: (
@@ -79,6 +90,20 @@ const navigationItems = [
         <rect x="7" y="11" width="3" height="6" />
         <rect x="12" y="8" width="3" height="9" />
         <rect x="17" y="5" width="3" height="12" />
+      </svg>
+    ),
+  },
+  {
+    section: 'Insights',
+    label: 'Audit Log',
+    path: '/audit-log',
+    icon: (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+        <path d="M16 13H8" />
+        <path d="M16 17H8" />
+        <path d="M10 9H8" />
       </svg>
     ),
   },
@@ -119,10 +144,10 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
           collapsed ? 'lg:w-[84px]' : 'lg:w-[272px]'
         } ${
           open ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } lg:h-screen lg:shrink-0`}
       >
         <div className={`border-b border-[#EEF1F5] px-4 py-5 ${collapsed ? 'lg:px-3' : ''}`}>
-          <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : 'justify-between'}`}>
+          <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : ''}`}>
             <div className="flex min-w-0 items-center gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] ring-1 ring-[#DDE3FF]">
                 <img src="/unideals-logo.svg" alt="UniDeals" className="h-7 w-7 object-contain" />
@@ -132,16 +157,6 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
                 <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Admin Portal</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#334155] transition hover:bg-[#F8FAFC] lg:inline-flex ${collapsed ? 'lg:hidden' : ''}`}
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </button>
           </div>
           <button
             type="button"
@@ -156,7 +171,7 @@ const Sidebar = ({ open, collapsed, onClose, onToggleCollapse }) => {
           </button>
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-5 ${collapsed ? 'lg:px-3' : 'px-3'}`}>
+        <nav className={`min-h-0 flex-1 overflow-y-auto py-5 ${collapsed ? 'lg:px-3' : 'px-3'}`}>
           <div className={collapsed ? 'space-y-4 lg:space-y-2' : 'space-y-6'}>
             {Array.from(navigationGroups.entries()).map(([section, items]) => (
               <div key={section}>

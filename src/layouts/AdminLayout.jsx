@@ -15,14 +15,13 @@ const AdminLayout = () => {
   if (!isAuthenticated) return <Navigate to="/login" replace />
 
   return (
-    <div className="min-h-screen bg-[#F4F6FA] lg:flex">
+    <div className="min-h-screen bg-[#F4F6FA] lg:flex lg:h-screen lg:min-h-0 lg:overflow-hidden">
       <Sidebar
         open={sidebarOpen}
         collapsed={sidebarCollapsed}
         onClose={() => setSidebarOpen(false)}
-        onToggleCollapse={() => setSidebarCollapsed((currentValue) => !currentValue)}
       />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 lg:h-screen lg:overflow-y-auto">
         <Navbar
           sidebarCollapsed={sidebarCollapsed}
           onMenuClick={() => setSidebarOpen(true)}

@@ -1,185 +1,302 @@
 import { memo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Loader from '../../../shared/components/Loader'
 import { useFetch } from '../../../shared/hooks/useFetch'
 import { dashboardApi } from '../api/dashboardApi'
+import { AUDIT_ACTION_LABELS } from '../../../shared/constants/constants'
 
-const toneStyles = {
-  primary: 'bg-[#EEF2FF] text-primary',
-  danger: 'bg-[#FEF2F2] text-[#DC2626]',
-  success: 'bg-[#ECFDF3] text-[#16A34A]',
-  neutral: 'bg-[#F1F5F9] text-[#64748B]',
+const formatRelativeTime = (dateValue) => {
+  const diff = Date.now() - new Date(dateValue).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
 }
 
-const statsAccent = ['border-l-[4px] border-primary', 'border-l-[4px] border-[#DC2626]', 'border-l-[4px] border-[#22C55E]']
+const StatCard = ({ label, value, accent, icon, sublabel }) => (
+  <article className={`rounded-[18px] bg-white p-5 shadow-sm ring-1 ring-[#E8ECF4] border-l-4 ${accent}`}>
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">{label}</p>
+        <p className="mt-4 text-[36px] font-bold leading-none tracking-[-0.04em] text-[#0B1220]">{value ?? '—'}</p>
+        {sublabel && <p className="mt-2 text-[12px] text-[#64748B]">{sublabel}</p>}
+      </div>
+      <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#F1F5F9]">
+        {icon}
+      </div>
+    </div>
+  </article>
+)
+
+const actionToneMap = {
+  'user.suspend': 'danger',
+  'product.block': 'danger',
+  'product.hard_delete': 'danger',
+  'product.soft_delete': 'danger',
+  'campus.pause': 'warning',
+  'campus.create': 'success',
+  'campus.activate': 'success',
+  'user.activate': 'success',
+  'product.activate': 'success',
+  'report.dismiss': 'neutral',
+}
+
+const toneBg = {
+  danger: 'bg-[#FEF2F2] text-[#DC2626]',
+  warning: 'bg-[#FFF7ED] text-[#C2410C]',
+  success: 'bg-[#ECFDF3] text-[#15803D]',
+  neutral: 'bg-[#F1F5F9] text-[#64748B]',
+  primary: 'bg-[#EEF2FF] text-[#3838EC]',
+}
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const loadDashboard = useCallback(() => dashboardApi.getDashboard(), [])
-  const { data: dashboardData, loading } = useFetch(loadDashboard)
+  const { data: dashboardData, loading, error } = useFetch(loadDashboard)
 
   if (loading && !dashboardData) return <Loader rows={4} columns={3} />
 
+  if (error || !dashboardData) {
+    return (
+      <div className="flex items-center justify-center py-20 text-[#64748B]">
+        <p>Failed to load dashboard. Please refresh.</p>
+      </div>
+    )
+  }
+
+  const { stats, recentActivity } = dashboardData
+
+  const statCards = [
+    {
+      label: 'Total Users',
+      value: stats.totalUsers,
+      accent: 'border-[#3838EC]',
+      sublabel: `${stats.activeUsers} active · ${stats.suspendedUsers} suspended`,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#3838EC]" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Listed Products',
+      value: stats.listedProducts,
+      accent: 'border-[#16A34A]',
+      sublabel: `${stats.blockedProducts} blocked`,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#16A34A]" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 7h18" />
+          <path d="M6 3h12l1 4H5l1-4Z" />
+          <rect x="4" y="7" width="16" height="14" rx="2" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Pending Reports',
+      value: stats.pendingReports,
+      accent: stats.pendingReports > 0 ? 'border-[#DC2626]' : 'border-[#E2E8F0]',
+      sublabel: stats.pendingReports > 0 ? 'Needs attention' : 'All clear',
+      icon: (
+        <svg viewBox="0 0 24 24" className={`h-5 w-5 ${stats.pendingReports > 0 ? 'text-[#DC2626]' : 'text-[#64748B]'}`} fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Active Campuses',
+      value: stats.activeCampuses,
+      accent: 'border-[#8B5CF6]',
+      sublabel: 'Live marketplaces',
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#8B5CF6]" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 21h18" />
+          <path d="M5 21V7l7-4 7 4v14" />
+          <path d="M9 21v-6h6v6" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Active Users',
+      value: stats.activeUsers,
+      accent: 'border-[#0EA5E9]',
+      sublabel: `${stats.inactiveUsers} inactive`,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#0EA5E9]" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="8" r="5" />
+          <path d="M20 21a8 8 0 1 0-16 0" />
+        </svg>
+      ),
+    },
+    {
+      label: 'Suspended Users',
+      value: stats.suspendedUsers,
+      accent: stats.suspendedUsers > 0 ? 'border-[#F59E0B]' : 'border-[#E2E8F0]',
+      sublabel: 'Restricted accounts',
+      icon: (
+        <svg viewBox="0 0 24 24" className={`h-5 w-5 ${stats.suspendedUsers > 0 ? 'text-[#F59E0B]' : 'text-[#64748B]'}`} fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M8 8l8 8" />
+        </svg>
+      ),
+    },
+  ]
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-[24px] font-semibold tracking-[-0.03em] text-[#0B1220] sm:text-[28px]">UniDeals Control Center</h1>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[14px] text-primary">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-primary">
-            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2">
+        <h1 className="text-[26px] font-bold tracking-[-0.03em] text-[#0B1220]">Control Center</h1>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-[#64748B]">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ECFDF3]">
+            <svg viewBox="0 0 24 24" className="h-3 w-3 text-[#16A34A]" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="m5 12 5 5L20 7" />
             </svg>
           </span>
-          <span>Operational status is currently optimal.</span>
+          <span>Platform operational · Live data</span>
         </div>
       </div>
 
-      <section className="grid gap-5 xl:grid-cols-[1.55fr_0.75fr]">
-        <div className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-3">
-            {dashboardData.stats.map((statCard, index) => (
-              <article key={statCard.label} className={`rounded-[18px] bg-white p-5 shadow-sm ring-1 ring-[#E8ECF4] ${statsAccent[index]}`}>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">{statCard.label}</p>
-                    <p className="mt-5 text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#0B1220]">{statCard.value}</p>
-                  </div>
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${index === 0 ? 'text-primary' : index === 1 ? 'text-[#DC2626]' : 'text-[#22C55E]'}`}>
-                    {index === 0 && (
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="4" y="4" width="16" height="16" rx="2" />
-                        <path d="M8 16V8" />
-                        <path d="M12 16v-4" />
-                        <path d="M16 16v-7" />
-                      </svg>
-                    )}
-                    {index === 1 && (
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M8 8l8 8" />
-                      </svg>
-                    )}
-                    {index === 2 && (
-                      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="m8 12 2.5 2.5L16 9" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-                <div className="mt-4 inline-flex rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none shadow-sm">
-                  <span className={index === 0 ? 'text-[#16A34A]' : index === 1 ? 'text-[#DC2626]' : 'text-primary'}>
-                    {index === 0 ? '+12%' : index === 1 ? 'High priority' : '98% efficiency'}
-                  </span>
-                </div>
-              </article>
-            ))}
+      {/* Stat Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {statCards.map((card) => (
+          <StatCard key={card.label} {...card} />
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <button
+          type="button"
+          onClick={() => navigate('/moderation')}
+          className={`group flex items-center gap-4 rounded-[18px] border p-4 text-left transition hover:shadow-md ${
+            stats.pendingReports > 0
+              ? 'border-[#FECACA] bg-[#FFF7F7]'
+              : 'border-[#E2E8F0] bg-white'
+          }`}
+        >
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${stats.pendingReports > 0 ? 'bg-[#EF4444] text-white' : 'bg-[#F1F5F9] text-[#64748B]'}`}>
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 9v4" /><path d="M12 17h.01" />
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+            </svg>
           </div>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold text-[#0B1220]">Moderation Queue</p>
+            <p className="mt-0.5 text-[13px] text-[#475569]">
+              {stats.pendingReports > 0 ? `${stats.pendingReports} pending reports` : 'No pending reports'}
+            </p>
+          </div>
+          <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-[#94A3B8] transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
 
-          <section className="rounded-[20px] bg-white p-5 shadow-sm ring-1 ring-[#E8ECF4] sm:p-6">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-[19px] font-semibold text-[#0B1220]">Priority queue</h2>
-              <button type="button" className="text-[14px] font-medium text-primary">
-                View all tasks
-              </button>
-            </div>
+        <button
+          type="button"
+          onClick={() => navigate('/campuses')}
+          className="group flex items-center gap-4 rounded-[18px] border border-[#E2E8F0] bg-white p-4 text-left transition hover:shadow-md"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#EEF2FF] text-[#3838EC]">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-6h6v6" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold text-[#0B1220]">Campus Management</p>
+            <p className="mt-0.5 text-[13px] text-[#475569]">{stats.activeCampuses} active campuses</p>
+          </div>
+          <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-[#94A3B8] transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
 
-            <div className="mt-6 space-y-4">
-              {dashboardData.queue.map((queueItem) => (
-                <article
-                  key={queueItem.id}
-                  className={`flex flex-col gap-4 rounded-[20px] border p-4 md:flex-row md:items-center md:justify-between ${
-                    queueItem.tone === 'danger' ? 'border-[#FECACA] bg-[#FFF7F7]' : 'border-[#E2E8F0] bg-[#F8FAFC]'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
-                        queueItem.tone === 'danger' ? 'bg-[#EF4444] text-white' : 'bg-[#E0E7FF] text-primary'
-                      }`}
-                    >
-                      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-                        {queueItem.tone === 'danger' ? (
-                          <>
-                            <path d="M12 9v4" />
-                            <path d="M12 17h.01" />
-                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
-                          </>
-                        ) : (
-                          <>
-                            <path d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4Z" />
-                            <circle cx="12" cy="11" r="2.2" />
-                          </>
-                        )}
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-[15px] font-semibold text-[#0B1220]">{queueItem.title}</p>
-                      <p className="mt-1 text-[13px] text-[#475569]">
-                        {queueItem.subtitle} <span className="text-[#0B1220]">• {queueItem.time}</span>
-                      </p>
-                    </div>
-                  </div>
+        <button
+          type="button"
+          onClick={() => navigate('/audit-log')}
+          className="group flex items-center gap-4 rounded-[18px] border border-[#E2E8F0] bg-white p-4 text-left transition hover:shadow-md"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#F0FDF4] text-[#16A34A]">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6" /><path d="M8 13h8" /><path d="M8 17h5" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold text-[#0B1220]">Audit Log</p>
+            <p className="mt-0.5 text-[13px] text-[#475569]">Full admin action history</p>
+          </div>
+          <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-[#94A3B8] transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+      </div>
 
-                  <button
-                    type="button"
-                    className={`rounded-xl px-5 py-2.5 text-[13px] font-semibold ${
-                      queueItem.tone === 'danger' ? 'bg-[#DC2626] text-white' : 'bg-[#E2E8F0] text-[#0B1220]'
-                    }`}
-                  >
-                    {queueItem.actionLabel}
-                  </button>
-                </article>
-              ))}
-            </div>
-          </section>
+      {/* Recent Moderation Activity */}
+      <section className="rounded-[20px] bg-white shadow-sm ring-1 ring-[#E8ECF4]">
+        <div className="flex items-center justify-between border-b border-[#EEF1F5] px-6 py-5">
+          <h2 className="text-[17px] font-semibold text-[#0B1220]">Recent Admin Activity</h2>
+          <button
+            type="button"
+            onClick={() => navigate('/audit-log')}
+            className="text-[13px] font-medium text-[#3838EC] hover:underline"
+          >
+            View full log →
+          </button>
         </div>
 
-        <section className="rounded-[20px] bg-white shadow-sm ring-1 ring-[#E8ECF4]">
-          <div className="border-b border-[#EEF1F5] px-6 py-6">
-            <h2 className="text-[19px] font-semibold text-[#0B1220]">Recent Moderation Activity</h2>
+        {recentActivity.length === 0 ? (
+          <div className="px-6 py-10 text-center text-[14px] text-[#94A3B8]">
+            No activity yet. Actions taken by admins will appear here.
           </div>
-          <div className="space-y-6 px-6 py-6">
-            {dashboardData.activity.map((activityItem) => (
-              <article key={activityItem.id} className="flex items-start gap-4">
-                <div className={`mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${toneStyles[activityItem.tone]}`}>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    {activityItem.tone === 'primary' && <path d="M7 4h10v16l-5-3-5 3V4Z" />}
-                    {activityItem.tone === 'neutral' && (
-                      <>
-                        <circle cx="11" cy="8" r="3" />
-                        <path d="M5 20c1.4-2.8 4-4 6-4" />
-                        <path d="m17 15 2 2 4-4" />
-                      </>
-                    )}
-                    {activityItem.tone === 'danger' && (
-                      <>
-                        <circle cx="12" cy="12" r="9" />
-                        <path d="M12 8v5" />
-                        <path d="M12 16h.01" />
-                      </>
-                    )}
-                  </svg>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-[16px] font-semibold text-[#0B1220]">{activityItem.title}</h3>
-                      <div className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${toneStyles[activityItem.tone]}`}>
-                        {activityItem.tag}
-                      </div>
-                    </div>
-                    <span className="text-[12px] text-[#0B1220]">{activityItem.time}</span>
+        ) : (
+          <div className="divide-y divide-[#F1F5F9]">
+            {recentActivity.map((entry) => {
+              const tone = actionToneMap[entry.action] || 'primary'
+              const bg = toneBg[tone]
+              return (
+                <div key={entry.id} className="flex items-start gap-4 px-6 py-4">
+                  <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${bg}`}>
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                      {tone === 'danger' && <><circle cx="12" cy="12" r="9" /><path d="M8 8l8 8" /></>}
+                      {tone === 'success' && <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></>}
+                      {tone === 'warning' && <><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></>}
+                      {(tone === 'neutral' || tone === 'primary') && <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></>}
+                    </svg>
                   </div>
-                  <p className="mt-3 text-[13px] leading-6 text-[#475569]">{activityItem.description}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[14px] font-semibold text-[#0B1220]">
+                        {AUDIT_ACTION_LABELS[entry.action] || entry.action}
+                      </p>
+                      <span className="shrink-0 text-[12px] text-[#94A3B8]">
+                        {formatRelativeTime(entry.createdAt)}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-[12px] text-[#64748B]">
+                      by <span className="font-medium text-[#334155]">{entry.actor_name}</span>
+                      <span className="ml-1 rounded-full bg-[#F1F5F9] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        {entry.actor_role}
+                      </span>
+                      {entry.target_snapshot?.name && (
+                        <> · {entry.target_snapshot.name}</>
+                      )}
+                      {entry.target_snapshot?.title && (
+                        <> · {entry.target_snapshot.title}</>
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </article>
-            ))}
+              )
+            })}
           </div>
-          <div className="border-t border-[#EEF1F5] px-6 py-5 text-center">
-            <button type="button" className="text-[15px] font-medium text-primary">
-              View full activity log
-            </button>
-          </div>
-        </section>
+        )}
       </section>
     </div>
   )

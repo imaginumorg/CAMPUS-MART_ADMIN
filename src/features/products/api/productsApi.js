@@ -9,6 +9,13 @@ export const productsApi = {
 
       return createApiResponse(response.data, response.message, response.pagination)
     }),
+
+  getProductDetails: (productId) =>
+    fetcher(async () => {
+      const response = await requestBackend(`/admin/products/${productId}`)
+      return createApiResponse(response.data, response.message)
+    }),
+
   updateProduct: (productId, updates) =>
     fetcher(async () => {
       if (updates.is_deleted) {
@@ -25,6 +32,7 @@ export const productsApi = {
 
       return createApiResponse(response.data, response.message)
     }),
+
   hardDeleteProduct: (productId) =>
     fetcher(async () => {
       const response = await requestBackend(`/admin/products/${productId}`, {
@@ -34,3 +42,4 @@ export const productsApi = {
       return createApiResponse(response.data, response.message)
     }),
 }
+

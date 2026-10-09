@@ -9,6 +9,13 @@ export const usersApi = {
 
       return createApiResponse(response.data, response.message, response.pagination)
     }),
+
+  getUserDetails: (userId) =>
+    fetcher(async () => {
+      const response = await requestBackend(`/admin/users/${userId}`)
+      return createApiResponse(response.data, response.message)
+    }),
+
   updateUserStatus: (userId, status) =>
     fetcher(async () => {
       const response = await requestBackend(`/admin/users/${userId}/status`, {
