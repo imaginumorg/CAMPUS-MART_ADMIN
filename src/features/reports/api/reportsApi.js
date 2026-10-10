@@ -1,55 +1,8 @@
 import { createApiResponse, fetcher } from '../../../shared/lib/apiClient'
 import { productsApi } from '../../products/api/productsApi'
 
-let mockReports = [
-  {
-    id: 1,
-    reportId: 'RID-9238476',
-    product: 'Zephyr Chronograph',
-    productId: 3,
-    reporterName: 'Sarah Jenkins',
-    reporterReference: 'RID-238776148',
-    sellerId: 'UID-1293184',
-    sku: '884729',
-    reason: 'Counterfeit Item',
-    reportCount: 5,
-    status: 'open',
-    created: '2026-04-20',
-  },
-  {
-    id: 2,
-    reportId: 'RID-9238477',
-    product: 'SonicMax Elite',
-    productId: 5,
-    reporterName: 'Michael Chen',
-    reporterReference: 'RID-238776149',
-    sellerId: 'UID-1294059',
-    sku: '886134',
-    reason: 'Inappropriate Content',
-    reportCount: 3,
-    status: 'open',
-    created: '2026-04-21',
-  },
-]
-
-let mockUserReports = [
-  {
-    id: 'REP-10293',
-    reportedUser: 'Alex Rivers',
-    email: 'alex.r@example.com',
-    sellerId: 'SEL-4829',
-    reporterName: 'Sarah Jenkins',
-    reporterId: 'USR-9021',
-    reason: 'Suspicious Activity',
-    shortReason: 'Suspicious ...',
-    status: 'pending',
-    resolutionLabel: 'Pending',
-    severity: 'urgent',
-    avatarColor: 'from-[#4B5563] to-[#111827]',
-    evidenceText:
-      'The user in question has been repeatedly posting content that violates the community guidelines regarding safety and harassment.',
-  },
-]
+let mockReports = []
+let mockUserReports = []
 
 const paginateCollection = (items, { page = 1, limit = 5 } = {}) => {
   const totalItems = items.length

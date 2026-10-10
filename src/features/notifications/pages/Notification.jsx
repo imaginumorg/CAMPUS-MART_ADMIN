@@ -34,9 +34,9 @@ const Notification = () => {
   const loadNotificationCenter = useCallback(() => notificationsApi.getNotificationCenter(), [])
   const { data: notificationData, loading } = useFetch(loadNotificationCenter)
 
-  const previewTitle = notificationTitle.trim() || notificationData?.preview?.title || 'System Maintenance'
+  const previewTitle = notificationTitle.trim() || 'Notification Title Preview'
   const previewBody =
-    notificationMessage.trim() || notificationData?.preview?.body || 'Scheduled maintenance window starting tomorrow at 9:00 PM.'
+    notificationMessage.trim() || 'Your message preview will appear here as you type.'
 
   const channelCopy = useMemo(
     () => ({
@@ -251,18 +251,22 @@ const Notification = () => {
             </button>
           </div>
           <div className="mt-5 space-y-4">
-            {(notificationData?.broadcasts || []).map((broadcast) => (
-              <article key={broadcast.id} className="border-b border-[#EEF1F5] pb-4 last:border-0 last:pb-0">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[17px] font-semibold text-[#0B1220]">{broadcast.title}</p>
-                    <p className="mt-1 text-sm text-[#64748B]">{broadcast.audience}</p>
+            {(notificationData?.broadcasts || []).length === 0 ? (
+              <p className="py-8 text-center text-sm text-[#94A3B8]">No data available</p>
+            ) : (
+              (notificationData?.broadcasts || []).map((broadcast) => (
+                <article key={broadcast.id} className="border-b border-[#EEF1F5] pb-4 last:border-0 last:pb-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[17px] font-semibold text-[#0B1220]">{broadcast.title}</p>
+                      <p className="mt-1 text-sm text-[#64748B]">{broadcast.audience}</p>
+                    </div>
+                    <span className={`text-[12px] font-semibold uppercase tracking-[0.14em] ${statusStyles[broadcast.status]}`}>{broadcast.status}</span>
                   </div>
-                  <span className={`text-[12px] font-semibold uppercase tracking-[0.14em] ${statusStyles[broadcast.status]}`}>{broadcast.status}</span>
-                </div>
-                <p className="mt-2 text-sm text-[#475569]">{broadcast.time}</p>
-              </article>
-            ))}
+                  <p className="mt-2 text-sm text-[#475569]">{broadcast.time}</p>
+                </article>
+              ))
+            )}
           </div>
         </section>
       </div>
